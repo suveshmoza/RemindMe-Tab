@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Reminder",
+  "version": "1.0.0",
+  "description": "Remind yourself about tabs after a certain period of time",
+  "permissions": [
+    "alarms",
+    "storage",
+    "notifications",
+    "tabs",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Tab Reminder"
+  },
+  "icons": {
+    "16": "icon-48.png",
+    "48": "icon-48.png",
+    "128": "icon-48.png"
+  }
+}
+
