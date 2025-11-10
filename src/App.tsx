@@ -150,7 +150,16 @@ function App() {
     return (
         <div className='p-4 w-96 h-[500px] overflow-y-auto'>
             <div className='flex items-center justify-between mb-4'>
-                <h1 className='text-2xl font-bold'>Tab Reminder</h1>
+                <div className='flex items-center gap-2'>
+                    <img
+                        src={chrome.runtime.getURL('icon-48.png')}
+                        alt='RemindMe Tab'
+                        width={32}
+                        height={32}
+                        className='mt-2'
+                    />
+                    <h1 className='text-2xl font-bold underline decoration-wavy decoration-blue-400'>RemindMe Tab</h1>
+                </div>
                 <Button size='icon' onClick={() => setIsDialogOpen(true)} className='h-8 w-8'>
                     <Plus className='h-4 w-4' />
                 </Button>

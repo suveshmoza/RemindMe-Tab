@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Select, SelectItem } from './ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { format } from 'date-fns';
 
 type TimeMode = 'duration' | 'specific';
@@ -113,7 +113,7 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
             {mode === 'duration' ? (
                 <div className='space-y-2'>
                     <Label>After how long?</Label>
-                    <div className='flex gap-4'>
+                    <div className='flex gap-1'>
                         <Input
                             type='number'
                             min='1'
@@ -127,9 +127,14 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
                             value={durationUnit}
                             onValueChange={(value) => setDurationUnit(value as 'minutes' | 'hours' | 'days')}
                         >
-                            <SelectItem value='minutes'>Minutes</SelectItem>
-                            <SelectItem value='hours'>Hours</SelectItem>
-                            <SelectItem value='days'>Days</SelectItem>
+                            <SelectTrigger className='flex-1'>
+                                <SelectValue placeholder='Select duration unit' />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value='minutes'>Minutes</SelectItem>
+                                <SelectItem value='hours'>Hours</SelectItem>
+                                <SelectItem value='days'>Days</SelectItem>
+                            </SelectContent>
                         </Select>
                     </div>
                 </div>

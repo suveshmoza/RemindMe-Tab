@@ -1,129 +1,182 @@
-import { useState } from 'react';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Check, Edit2, Trash2, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import type { Reminder } from '../types/reminder';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { format, formatDistanceToNow } from 'date-fns';
-import { Edit2, Trash2, X, Check } from 'lucide-react';
-import type { Reminder } from '../types/reminder';
+import { Progress } from './ui/progress';
 
 interface ReminderItemProps {
-  reminder: Reminder;
-  onDelete: (id: string) => void;
-  onEdit: (id: string, updates: Partial<Reminder>) => void;
+    reminder: Reminder;
+    onDelete: (id: string) => void;
+    onEdit: (id: string, updates: Partial<Reminder>) => void;
 }
 
-export function ReminderItem({ reminder, onDelete, onEdit }: ReminderItemProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [date, setDate] = useState(format(new Date(reminder.triggerTime), 'yyyy-MM-dd'));
-  const [time, setTime] = useState(format(new Date(reminder.triggerTime), 'HH:mm'));
+export function ReminderItem({ reminder, onEdit, onDelete }: ReminderItemProps) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [currentTime, setCurrentTime] = useState(Date.now());
 
-  const triggerTime = reminder.snoozedUntil || reminder.triggerTime;
-  const isPast = triggerTime < Date.now();
+    // Use snoozed time if available, otherwise use original trigger time
+    const triggerTime = reminder.snoozedUntil || reminder.triggerTime;
+    const isPast = triggerTime < currentTime;
+    const isSnoozed = !!reminder.snoozedUntil;
 
-  const handleSave = () => {
-    const dateTime = new Date(`${date}T${time}`);
-    const newTriggerTime = dateTime.getTime();
+    // Initialize date and time inputs from trigger time
+    const getInitialDate = () => format(new Date(triggerTime), 'yyyy-MM-dd');
+    const getInitialTime = () => format(new Date(triggerTime), 'HH:mm');
 
-    if (newTriggerTime <= Date.now()) {
-      alert('Please select a future date and time');
-      return;
-    }
+    const [date, setDate] = useState(getInitialDate());
+    const [time, setTime] = useState(getInitialTime());
 
-    onEdit(reminder.id, { triggerTime: newTriggerTime, snoozedUntil: undefined });
-    setIsEditing(false);
-  };
+    // Calculate progress percentage (0-100)
+    useEffect(() => {
+        const calculateProgress = () => {
+            const now = Date.now();
+            setCurrentTime(now);
 
-  const handleCancel = () => {
-    setDate(format(new Date(reminder.triggerTime), 'yyyy-MM-dd'));
-    setTime(format(new Date(reminder.triggerTime), 'HH:mm'));
-    setIsEditing(false);
-  };
+            const totalDuration = triggerTime - reminder.createdAt;
+            const elapsed = now - reminder.createdAt;
 
-  return (
-    <div className="border rounded-lg p-3 space-y-2">
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium truncate">{reminder.title}</h4>
-          <p className="text-sm text-muted-foreground truncate">{reminder.url}</p>
-          {isEditing ? (
-            <div className="mt-2 space-y-2">
-              <div>
-                <Label className="text-xs">Date</Label>
-                <Input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="h-8 text-xs"
-                  min={format(new Date(), 'yyyy-MM-dd')}
-                />
-              </div>
-              <div>
-                <Label className="text-xs">Time</Label>
-                <Input
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="h-8 text-xs"
-                />
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={handleSave}
-                  className="h-7 text-xs"
-                >
-                  <Check className="h-3 w-3 mr-1" />
-                  Save
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCancel}
-                  className="h-7 text-xs"
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Cancel
-                </Button>
-              </div>
+            if (totalDuration <= 0) {
+                setProgress(100);
+                return;
+            }
+
+            const percentage = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+            setProgress(percentage);
+        };
+
+        calculateProgress();
+        const interval = setInterval(calculateProgress, 1000);
+
+        return () => clearInterval(interval);
+    }, [triggerTime, reminder.createdAt]);
+
+    const handleSave = () => {
+        const dateTime = new Date(`${date}T${time}`);
+        const newTriggerTime = dateTime.getTime();
+
+        if (newTriggerTime <= Date.now()) {
+            alert('Please select a future date and time');
+            return;
+        }
+
+        onEdit(reminder.id, { triggerTime: newTriggerTime, snoozedUntil: undefined });
+        setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+        setDate(getInitialDate());
+        setTime(getInitialTime());
+        setIsEditing(false);
+    };
+
+    const handleEdit = () => setIsEditing(true);
+    const handleDelete = () => onDelete(reminder.id);
+
+    const timeDisplay = formatDistanceToNow(triggerTime, { addSuffix: false });
+    const formattedDateTime = format(new Date(triggerTime), 'PPpp');
+
+    return (
+        <div className='border rounded-lg p-2 space-y-3 bg-card hover:border-primary/50 transition-colors'>
+            {/* Header: Title and Actions */}
+            <div className='flex items-start justify-between gap-2'>
+                <div className='flex-1 min-w-0 space-y-1'>
+                    <h4 className='font-semibold text-sm truncate'>{reminder.title}</h4>
+                    <p className='text-xs text-muted-foreground truncate'>{reminder.url}</p>
+                </div>
+
+                {!isEditing && (
+                    <div className='flex gap-1 shrink-0'>
+                        <Button
+                            size='sm'
+                            variant='ghost'
+                            onClick={handleEdit}
+                            className='h-8 w-8 p-0'
+                            aria-label='Edit reminder'
+                        >
+                            <Edit2 className='h-4 w-4' />
+                        </Button>
+                        <Button
+                            size='sm'
+                            variant='ghost'
+                            onClick={handleDelete}
+                            className='h-8 w-8 p-0 text-destructive hover:text-destructive'
+                            aria-label='Delete reminder'
+                        >
+                            <Trash2 className='h-4 w-4' />
+                        </Button>
+                    </div>
+                )}
             </div>
-          ) : (
-            <div className="mt-1">
-              <p className="text-xs text-muted-foreground">
-                {isPast ? 'Overdue: ' : 'Reminds in: '}
-                {formatDistanceToNow(triggerTime, { addSuffix: !isPast })}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {format(new Date(triggerTime), 'PPpp')}
-              </p>
-              {reminder.snoozedUntil && (
-                <p className="text-xs text-blue-500">Snoozed</p>
-              )}
-            </div>
-          )}
+
+            {/* Progress Bar */}
+            {!isEditing && (
+                <div className='space-y-1'>
+                    <Progress value={progress} className='h-1.5' />
+                    <div className='flex items-center justify-between text-xs text-muted-foreground'>
+                        <span>{isPast ? 'Overdue' : 'Reminding in'}</span>
+                        <span className='font-medium text-foreground'>{timeDisplay}</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Content: Editing or Display */}
+            {isEditing ? (
+                <div className='space-y-3 pt-2'>
+                    <div className='grid grid-cols-2 gap-2'>
+                        <div className='space-y-1.5'>
+                            <Label htmlFor='date-input' className='text-xs font-medium'>
+                                Date
+                            </Label>
+                            <Input
+                                id='date-input'
+                                type='date'
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                                min={format(new Date(), 'yyyy-MM-dd')}
+                                className='h-9'
+                            />
+                        </div>
+                        <div className='space-y-1.5'>
+                            <Label htmlFor='time-input' className='text-xs font-medium'>
+                                Time
+                            </Label>
+                            <Input
+                                id='time-input'
+                                type='time'
+                                value={time}
+                                onChange={(e) => setTime(e.target.value)}
+                                className='h-9'
+                            />
+                        </div>
+                    </div>
+
+                    <div className='flex gap-2 justify-end pt-1'>
+                        <Button size='sm' variant='outline' onClick={handleCancel}>
+                            <X className='h-3.5 w-3.5 mr-1.5' />
+                            Cancel
+                        </Button>
+                        <Button size='sm' onClick={handleSave}>
+                            <Check className='h-3.5 w-3.5 mr-1.5' />
+                            Save
+                        </Button>
+                    </div>
+                </div>
+            ) : (
+                <div className='space-y-0.5'>
+                    <div className='flex items-center justify-between text-xs'>
+                        {isSnoozed && (
+                            <span className='px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium'>
+                                Snoozed
+                            </span>
+                        )}
+                    </div>
+                    <p className='text-xs text-muted-foreground'>{formattedDateTime}</p>
+                </div>
+            )}
         </div>
-        {!isEditing && (
-          <div className="flex gap-1 ml-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setIsEditing(true)}
-              className="h-8 w-8 p-0"
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onDelete(reminder.id)}
-              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    );
 }
-
