@@ -1,11 +1,27 @@
-import { format, formatDistanceToNow } from 'date-fns';
 import { Check, Edit2, Trash2, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import type { Reminder } from '../types/reminder';
+import type { Reminder } from '../utils/storage';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Progress } from './ui/progress';
+
+// Lazy load date-fns functions since they're only used for formatting
+type DateFnsModule = {
+    format: typeof import('date-fns').format;
+    formatDistanceToNow: typeof import('date-fns').formatDistanceToNow;
+};
+
+let dateFnsCache: DateFnsModule | null = null;
+const loadDateFns = async (): Promise<DateFnsModule> => {
+    if (dateFnsCache) return dateFnsCache;
+    const module = await import('date-fns');
+    dateFnsCache = {
+        format: module.format,
+        formatDistanceToNow: module.formatDistanceToNow,
+    };
+    return dateFnsCache;
+};
 
 interface ReminderItemProps {
     reminder: Reminder;
@@ -17,18 +33,27 @@ export function ReminderItem({ reminder, onEdit, onDelete }: ReminderItemProps) 
     const [isEditing, setIsEditing] = useState(false);
     const [progress, setProgress] = useState(0);
     const [currentTime, setCurrentTime] = useState(Date.now());
+    const [dateFns, setDateFns] = useState<DateFnsModule | null>(null);
+    const [date, setDate] = useState('');
+    const [time, setTime] = useState('');
 
     // Use snoozed time if available, otherwise use original trigger time
     const triggerTime = reminder.snoozedUntil || reminder.triggerTime;
     const isPast = triggerTime < currentTime;
     const isSnoozed = !!reminder.snoozedUntil;
 
-    // Initialize date and time inputs from trigger time
-    const getInitialDate = () => format(new Date(triggerTime), 'yyyy-MM-dd');
-    const getInitialTime = () => format(new Date(triggerTime), 'HH:mm');
+    // Load date-fns on mount
+    useEffect(() => {
+        loadDateFns().then(setDateFns);
+    }, []);
 
-    const [date, setDate] = useState(getInitialDate());
-    const [time, setTime] = useState(getInitialTime());
+    // Initialize date and time inputs from trigger time once dateFns is loaded
+    useEffect(() => {
+        if (dateFns) {
+            setDate(dateFns.format(new Date(triggerTime), 'yyyy-MM-dd'));
+            setTime(dateFns.format(new Date(triggerTime), 'HH:mm'));
+        }
+    }, [dateFns, triggerTime]);
 
     // Calculate progress percentage (0-100)
     useEffect(() => {
@@ -68,16 +93,19 @@ export function ReminderItem({ reminder, onEdit, onDelete }: ReminderItemProps) 
     };
 
     const handleCancel = () => {
-        setDate(getInitialDate());
-        setTime(getInitialTime());
+        if (dateFns) {
+            setDate(dateFns.format(new Date(triggerTime), 'yyyy-MM-dd'));
+            setTime(dateFns.format(new Date(triggerTime), 'HH:mm'));
+        }
         setIsEditing(false);
     };
 
     const handleEdit = () => setIsEditing(true);
     const handleDelete = () => onDelete(reminder.id);
 
-    const timeDisplay = formatDistanceToNow(triggerTime, { addSuffix: false });
-    const formattedDateTime = format(new Date(triggerTime), 'PPpp');
+    // Format time display and date time, with fallback if dateFns not loaded yet
+    const timeDisplay = dateFns ? dateFns.formatDistanceToNow(triggerTime, { addSuffix: false }) : 'Loading...';
+    const formattedDateTime = dateFns ? dateFns.format(new Date(triggerTime), 'PPpp') : 'Loading...';
 
     return (
         <div className='border rounded-lg p-2 space-y-3 bg-card hover:border-primary/50 transition-colors'>
@@ -136,7 +164,7 @@ export function ReminderItem({ reminder, onEdit, onDelete }: ReminderItemProps) 
                                 type='date'
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
-                                min={format(new Date(), 'yyyy-MM-dd')}
+                                min={dateFns ? dateFns.format(new Date(), 'yyyy-MM-dd') : undefined}
                                 className='h-9'
                             />
                         </div>

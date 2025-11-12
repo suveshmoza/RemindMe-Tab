@@ -1,0 +1,48 @@
+export interface Reminder {
+    id: string;
+    tabId: number;
+    url: string;
+    title: string;
+    triggerTime: number; // timestamp in milliseconds
+    createdAt: number; // timestamp in milliseconds
+    snoozedUntil?: number; // timestamp in milliseconds
+}
+
+import { storage } from 'wxt/utils/storage';
+
+const STORAGE_KEY = 'local:reminders';
+
+export async function getReminders(): Promise<Reminder[]> {
+    const result = await storage.getItem<Reminder[]>(STORAGE_KEY);
+    return Array.isArray(result) ? result : [];
+}
+
+export async function saveReminders(reminders: Reminder[]): Promise<void> {
+    await storage.setItem(STORAGE_KEY, reminders);
+}
+
+export async function addReminder(reminder: Reminder): Promise<void> {
+    const reminders = await getReminders();
+    reminders.push(reminder);
+    await saveReminders(reminders);
+}
+
+export async function updateReminder(id: string, updates: Partial<Reminder>): Promise<void> {
+    const reminders = await getReminders();
+    const index = reminders.findIndex((r) => r.id === id);
+    if (index !== -1) {
+        reminders[index] = { ...reminders[index], ...updates };
+        await saveReminders(reminders);
+    }
+}
+
+export async function deleteReminder(id: string): Promise<void> {
+    const reminders = await getReminders();
+    const filtered = reminders.filter((r) => r.id !== id);
+    await saveReminders(filtered);
+}
+
+export async function getReminder(id: string): Promise<Reminder | undefined> {
+    const reminders = await getReminders();
+    return reminders.find((r) => r.id === id);
+}

@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { ReminderForm } from './components/ReminderForm';
-import { ReminderList } from './components/ReminderList';
-import { Button } from './components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './components/ui/dialog';
+import { ReminderForm } from '@/components/ReminderForm';
+import { ReminderList } from '@/components/ReminderList';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
-import type { Reminder } from './types/reminder';
-
+import { useEffect, useState } from 'react';
+import { browser } from 'wxt/browser';
+import type { Reminder } from '../../utils/storage';
 function App() {
     const [reminders, setReminders] = useState<Reminder[]>([]);
     const [currentTab, setCurrentTab] = useState<{ id: number; title: string; url: string } | null>(null);
@@ -17,26 +17,26 @@ function App() {
         loadReminders();
 
         // Set up storage listener to update reminders when they change
-        const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }) => {
+        const handleStorageChange = (changes: { [key: string]: Browser.storage.StorageChange }) => {
             if (changes.reminders) {
                 setReminders(changes.reminders.newValue || []);
             }
         };
 
-        chrome.storage.onChanged.addListener(handleStorageChange);
+        browser.storage.onChanged.addListener(handleStorageChange);
 
         // Poll for reminders updates (in case storage listener doesn't work)
         const interval = setInterval(loadReminders, 1000);
 
         return () => {
-            chrome.storage.onChanged.removeListener(handleStorageChange);
+            browser.storage.onChanged.removeListener(handleStorageChange);
             clearInterval(interval);
         };
     }, []);
 
     const loadCurrentTab = async () => {
         try {
-            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
             if (tab && tab.id && tab.title && tab.url) {
                 setCurrentTab({
                     id: tab.id,
@@ -51,7 +51,7 @@ function App() {
 
     const loadReminders = async () => {
         try {
-            const response = await chrome.runtime.sendMessage({ type: 'getReminders' });
+            const response = await browser.runtime.sendMessage({ type: 'getReminders' });
             if (response.success) {
                 // Filter out past reminders that aren't snoozed
                 const now = Date.now();
@@ -79,7 +79,7 @@ function App() {
                 createdAt: Date.now(),
             };
 
-            const response = await chrome.runtime.sendMessage({
+            const response = await browser.runtime.sendMessage({
                 type: 'createReminder',
                 reminder,
             });
@@ -99,7 +99,7 @@ function App() {
 
     const handleUpdateReminder = async (id: string, updates: Partial<Reminder>) => {
         try {
-            const response = await chrome.runtime.sendMessage({
+            const response = await browser.runtime.sendMessage({
                 type: 'updateReminder',
                 id,
                 updates,
@@ -118,7 +118,7 @@ function App() {
 
     const handleDeleteReminder = async (id: string) => {
         try {
-            const response = await chrome.runtime.sendMessage({
+            const response = await browser.runtime.sendMessage({
                 type: 'deleteReminder',
                 id,
             });
@@ -152,11 +152,12 @@ function App() {
             <div className='flex items-center justify-between mb-4'>
                 <div className='flex items-center gap-2'>
                     <img
-                        src={chrome.runtime.getURL('icon-48.png')}
+                        src={browser.runtime.getURL('/icons/48.png')}
                         alt='RemindMe Tab'
                         width={32}
                         height={32}
                         className='mt-2'
+                        loading='eager'
                     />
                     <h1 className='text-2xl font-bold underline decoration-wavy decoration-blue-400'>RemindMe Tab</h1>
                 </div>

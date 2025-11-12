@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { format } from 'date-fns';
+import { NativeSelect } from './ui/native-select';
 
 type TimeMode = 'duration' | 'specific';
 
@@ -12,10 +12,12 @@ interface ReminderFormProps {
     currentTab?: { id: number; title: string; url: string };
 }
 
+type DurationUnit = 'minutes' | 'hours' | 'days';
+
 export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
     const [mode, setMode] = useState<TimeMode>('duration');
     const [duration, setDuration] = useState('');
-    const [durationUnit, setDurationUnit] = useState<'minutes' | 'hours' | 'days'>('minutes');
+    const [durationUnit, setDurationUnit] = useState<DurationUnit>('minutes');
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
 
@@ -113,7 +115,7 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
             {mode === 'duration' ? (
                 <div className='space-y-2'>
                     <Label>After how long?</Label>
-                    <div className='flex gap-1'>
+                    <div className='flex gap-1 px-1'>
                         <Input
                             type='number'
                             min='1'
@@ -121,21 +123,19 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
                             value={duration}
                             onChange={(e) => setDuration(e.target.value)}
                             required
-                            className='flex-1'
+                            className='flex-1 w-full'
                         />
-                        <Select
-                            value={durationUnit}
-                            onValueChange={(value) => setDurationUnit(value as 'minutes' | 'hours' | 'days')}
-                        >
-                            <SelectTrigger className='flex-1'>
-                                <SelectValue placeholder='Select duration unit' />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value='minutes'>Minutes</SelectItem>
-                                <SelectItem value='hours'>Hours</SelectItem>
-                                <SelectItem value='days'>Days</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className='flex-1 w-full'>
+                            <NativeSelect
+                                className='w-full'
+                                value={durationUnit}
+                                onChange={(e) => setDurationUnit(e.target.value as DurationUnit)}
+                            >
+                                <option value='minutes'>Minutes</option>
+                                <option value='hours'>Hours</option>
+                                <option value='days'>Days</option>
+                            </NativeSelect>
+                        </div>
                     </div>
                 </div>
             ) : (

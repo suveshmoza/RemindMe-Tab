@@ -1,6 +1,7 @@
-import { Card, CardContent } from './ui/card';
+import { browser } from 'wxt/browser';
+import type { Reminder } from '../utils/storage';
 import { ReminderItem } from './ReminderItem';
-import type { Reminder } from '../types/reminder';
+import { Card, CardContent } from './ui/card';
 
 interface ReminderListProps {
     reminders: Reminder[];
@@ -14,9 +15,10 @@ export function ReminderList({ reminders, onDelete, onEdit }: ReminderListProps)
             <Card className='border-none shadow-none'>
                 <CardContent className='pt-6'>
                     <img
-                        src={chrome.runtime.getURL('GroovySittingDoodle.png')}
+                        src={browser.runtime.getURL('/doodle.webp')}
                         alt='RemindMe Tab'
                         className='mt-1 w-full h-full object-cover'
+                        loading='lazy'
                     />
                     <p className='text-center text-muted-foreground text-2xl'>No active reminders</p>
                 </CardContent>
