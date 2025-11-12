@@ -1,9 +1,9 @@
-import type { Reminder } from './storage';
+import type { Reminder } from '@/types/reminder';
 import { browser } from 'wxt/browser';
 
 export async function createNotification(reminder: Reminder): Promise<string> {
     // Use the PNG icon from the extension
-    const iconUrl = browser.runtime.getURL('/icon-48.png');
+    const iconUrl = browser.runtime.getURL('/icons/48.png');
 
     // Build notification options based on browser support
     const isFirefox = import.meta.env.BROWSER === 'firefox';

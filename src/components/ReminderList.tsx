@@ -1,15 +1,17 @@
+import { memo } from 'react';
 import { browser } from 'wxt/browser';
-import type { Reminder } from '../utils/storage';
-import { ReminderItem } from './ReminderItem';
-import { Card, CardContent } from './ui/card';
+import type { Reminder } from '@/types/reminder';
+import { ReminderItem } from '@/components/ReminderItem/ReminderItem';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface ReminderListProps {
     reminders: Reminder[];
     onDelete: (id: string) => void;
     onEdit: (id: string, updates: Partial<Reminder>) => void;
+    onError?: (message: string) => void;
 }
 
-export function ReminderList({ reminders, onDelete, onEdit }: ReminderListProps) {
+export const ReminderList = memo(function ReminderList({ reminders, onDelete, onEdit, onError }: ReminderListProps) {
     if (reminders.length === 0) {
         return (
             <Card className='border-none shadow-none'>
@@ -33,9 +35,15 @@ export function ReminderList({ reminders, onDelete, onEdit }: ReminderListProps)
 
             <div className='space-y-2 mt-2'>
                 {reminders.map((reminder) => (
-                    <ReminderItem key={reminder.id} reminder={reminder} onDelete={onDelete} onEdit={onEdit} />
+                    <ReminderItem
+                        key={reminder.id}
+                        reminder={reminder}
+                        onDelete={onDelete}
+                        onEdit={onEdit}
+                        onError={onError}
+                    />
                 ))}
             </div>
         </>
     );
-}
+});

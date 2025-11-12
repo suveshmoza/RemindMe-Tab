@@ -1,16 +1,6 @@
-export interface Reminder {
-    id: string;
-    tabId: number;
-    url: string;
-    title: string;
-    triggerTime: number; // timestamp in milliseconds
-    createdAt: number; // timestamp in milliseconds
-    snoozedUntil?: number; // timestamp in milliseconds
-}
-
+import { STORAGE_KEY } from '@/constants';
+import type { Reminder } from '@/types/reminder';
 import { storage } from 'wxt/utils/storage';
-
-const STORAGE_KEY = 'local:reminders';
 
 export async function getReminders(): Promise<Reminder[]> {
     const result = await storage.getItem<Reminder[]>(STORAGE_KEY);

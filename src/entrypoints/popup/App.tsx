@@ -1,138 +1,87 @@
+import { useCallback, useState } from 'react';
+import { browser } from 'wxt/browser';
 import { ReminderForm } from '@/components/ReminderForm';
 import { ReminderList } from '@/components/ReminderList';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ToastContainer } from '@/components/ui/toast';
 import { Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { browser } from 'wxt/browser';
-import type { Reminder } from '../../utils/storage';
+import { useCurrentTab } from '@/hooks/useCurrentTab';
+import { useReminders } from '@/hooks/useReminders';
+import { useStorageListener } from '@/hooks/useStorageListener';
+import { useToast } from '@/hooks/useToast';
+import type { ReminderFormData } from '@/types/reminder-form-data';
+
 function App() {
-    const [reminders, setReminders] = useState<Reminder[]>([]);
-    const [currentTab, setCurrentTab] = useState<{ id: number; title: string; url: string } | null>(null);
-    const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const { currentTab, loading: tabLoading } = useCurrentTab();
+    const { reminders, loading: remindersLoading, createReminder, updateReminder, deleteReminder, loadReminders } =
+        useReminders();
+    const { toasts, showError, showSuccess, removeToast } = useToast();
 
-    useEffect(() => {
-        loadCurrentTab();
-        loadReminders();
+    const loading = tabLoading || remindersLoading;
 
-        // Set up storage listener to update reminders when they change
-        const handleStorageChange = (changes: { [key: string]: Browser.storage.StorageChange }) => {
-            if (changes.reminders) {
-                setReminders(changes.reminders.newValue || []);
+    // Set up storage listener
+    useStorageListener({
+        onRemindersChange: useCallback(
+            () => {
+                // Reload reminders when storage changes
+                loadReminders();
+            },
+            [loadReminders]
+        ),
+        onPoll: loadReminders,
+    });
+
+    const handleCreateReminder = useCallback(
+        async (data: ReminderFormData) => {
+            try {
+                await createReminder(data);
+                showSuccess('Reminder created successfully');
+                setIsDialogOpen(false);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Failed to create reminder';
+                showError(message);
             }
-        };
+        },
+        [createReminder, showSuccess, showError]
+    );
 
-        browser.storage.onChanged.addListener(handleStorageChange);
-
-        // Poll for reminders updates (in case storage listener doesn't work)
-        const interval = setInterval(loadReminders, 1000);
-
-        return () => {
-            browser.storage.onChanged.removeListener(handleStorageChange);
-            clearInterval(interval);
-        };
-    }, []);
-
-    const loadCurrentTab = async () => {
-        try {
-            const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-            if (tab && tab.id && tab.title && tab.url) {
-                setCurrentTab({
-                    id: tab.id,
-                    title: tab.title,
-                    url: tab.url,
-                });
+    const handleUpdateReminder = useCallback(
+        async (id: string, updates: Parameters<typeof updateReminder>[1]) => {
+            try {
+                await updateReminder(id, updates);
+                showSuccess('Reminder updated successfully');
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Failed to update reminder';
+                showError(message);
             }
-        } catch (error) {
-            console.error('Error loading current tab:', error);
-        }
-    };
+        },
+        [updateReminder, showSuccess, showError]
+    );
 
-    const loadReminders = async () => {
-        try {
-            const response = await browser.runtime.sendMessage({ type: 'getReminders' });
-            if (response.success) {
-                // Filter out past reminders that aren't snoozed
-                const now = Date.now();
-                const activeReminders = response.reminders.filter((r: Reminder) => {
-                    const triggerTime = r.snoozedUntil || r.triggerTime;
-                    return triggerTime > now;
-                });
-                setReminders(activeReminders);
+    const handleDeleteReminder = useCallback(
+        async (id: string) => {
+            try {
+                await deleteReminder(id);
+                showSuccess('Reminder deleted successfully');
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Failed to delete reminder';
+                showError(message);
             }
-        } catch (error) {
-            console.error('Error loading reminders:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        },
+        [deleteReminder, showSuccess, showError]
+    );
 
-    const handleCreateReminder = async (data: { triggerTime: number; title: string; url: string; tabId: number }) => {
-        try {
-            const reminder: Reminder = {
-                id: `${Date.now()}-${Math.random()}`,
-                tabId: data.tabId,
-                url: data.url,
-                title: data.title,
-                triggerTime: data.triggerTime,
-                createdAt: Date.now(),
-            };
+    const handleFormSubmit = useCallback(
+        async (data: ReminderFormData) => {
+            await handleCreateReminder(data);
+        },
+        [handleCreateReminder]
+    );
 
-            const response = await browser.runtime.sendMessage({
-                type: 'createReminder',
-                reminder,
-            });
-
-            if (response && response.success) {
-                await loadReminders();
-            } else {
-                const errorMsg = response?.error || 'Unknown error';
-                console.error('Error creating reminder:', errorMsg);
-                alert(`Error creating reminder: ${errorMsg}`);
-            }
-        } catch (error) {
-            console.error('Error creating reminder:', error);
-            alert('Failed to create reminder');
-        }
-    };
-
-    const handleUpdateReminder = async (id: string, updates: Partial<Reminder>) => {
-        try {
-            const response = await browser.runtime.sendMessage({
-                type: 'updateReminder',
-                id,
-                updates,
-            });
-
-            if (response.success) {
-                await loadReminders();
-            } else {
-                alert(`Error updating reminder: ${response.error}`);
-            }
-        } catch (error) {
-            console.error('Error updating reminder:', error);
-            alert('Failed to update reminder');
-        }
-    };
-
-    const handleDeleteReminder = async (id: string) => {
-        try {
-            const response = await browser.runtime.sendMessage({
-                type: 'deleteReminder',
-                id,
-            });
-
-            if (response.success) {
-                await loadReminders();
-            } else {
-                alert(`Error deleting reminder: ${response.error}`);
-            }
-        } catch (error) {
-            console.error('Error deleting reminder:', error);
-            alert('Failed to delete reminder');
-        }
-    };
+    const handleOpenDialog = useCallback(() => setIsDialogOpen(true), []);
+    const handleDialogChange = useCallback((open: boolean) => setIsDialogOpen(open), []);
 
     if (loading) {
         return (
@@ -141,11 +90,6 @@ function App() {
             </div>
         );
     }
-
-    const handleFormSubmit = async (data: { triggerTime: number; title: string; url: string; tabId: number }) => {
-        await handleCreateReminder(data);
-        setIsDialogOpen(false);
-    };
 
     return (
         <div className='p-4 w-96 h-[500px] overflow-y-auto'>
@@ -161,14 +105,19 @@ function App() {
                     />
                     <h1 className='text-2xl font-bold underline decoration-wavy decoration-blue-400'>RemindMe Tab</h1>
                 </div>
-                <Button size='icon' onClick={() => setIsDialogOpen(true)} className='h-8 w-8'>
+                <Button size='icon' onClick={handleOpenDialog} className='h-8 w-8'>
                     <Plus className='h-4 w-4' />
                 </Button>
             </div>
 
-            <ReminderList reminders={reminders} onDelete={handleDeleteReminder} onEdit={handleUpdateReminder} />
+            <ReminderList
+                reminders={reminders}
+                onDelete={handleDeleteReminder}
+                onEdit={handleUpdateReminder}
+                onError={showError}
+            />
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
                 <DialogContent className='max-h-[85vh]'>
                     <DialogHeader>
                         <DialogTitle>Create Reminder</DialogTitle>
@@ -179,6 +128,8 @@ function App() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>
     );
 }

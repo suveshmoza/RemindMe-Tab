@@ -1,16 +1,8 @@
-import { getReminders, updateReminder, deleteReminder, getReminder, addReminder } from '../utils/storage';
-import { createNotification, requestNotificationPermission } from '../utils/notification';
-import type { Reminder } from '../utils/storage';
+import { getReminders, updateReminder, deleteReminder, getReminder, addReminder } from '@/utils/storage';
+import { createNotification, requestNotificationPermission } from '@/utils/notification';
+import type { Reminder } from '@/types/reminder';
+import type { MessageType, MessageResponse } from '@/types/messages';
 import { browser } from 'wxt/browser';
-
-export type MessageType =
-    | { type: 'createReminder'; reminder: Reminder }
-    | { type: 'updateReminder'; id: string; updates: Partial<Reminder> }
-    | { type: 'deleteReminder'; id: string }
-    | { type: 'getReminders' }
-    | { type: 'snoozeReminder'; id: string; minutes: number };
-
-export type MessageResponse = { success: true; reminders?: Reminder[] } | { success: false; error: string };
 
 export default defineBackground(() => {
     // Request notification permission on install

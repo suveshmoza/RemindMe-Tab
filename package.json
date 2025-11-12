@@ -1,8 +1,9 @@
 {
-    "name": "wxt-starter",
-    "description": "manifest.json description",
+    "name": "remindme-tab",
+    "description": "A cross-browser extension that helps you set reminders for browser tabs, so you never lose track of important pages you want to revisit later.",
     "private": true,
-    "version": "0.0.0",
+    "version": "1.0.0",
+    "author": "Suvesh Moza <suveshmoza@gmail.com> (https://suveshmoza.vercel.app)",
     "type": "module",
     "scripts": {
         "dev": "wxt",
@@ -11,7 +12,10 @@
         "build:firefox": "wxt build -b firefox",
         "zip": "wxt zip",
         "zip:firefox": "wxt zip -b firefox",
+        "zip:edge": "wxt zip -b edge",
         "compile": "tsc --noEmit",
+        "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
+        "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css,md}\"",
         "postinstall": "wxt prepare"
     },
     "devDependencies": {
@@ -20,6 +24,7 @@
         "@types/react-dom": "^19.2.2",
         "@wxt-dev/auto-icons": "^1.1.0",
         "@wxt-dev/module-react": "^1.1.5",
+        "prettier": "^3.3.3",
         "typescript": "^5.9.2",
         "wxt": "^0.20.6"
     },
@@ -28,7 +33,6 @@
         "@radix-ui/react-dialog": "^1.1.15",
         "@radix-ui/react-label": "^2.1.8",
         "@radix-ui/react-progress": "^1.1.8",
-        "@radix-ui/react-select": "^2.2.6",
         "@radix-ui/react-slot": "^1.2.4",
         "@tailwindcss/vite": "^4.1.17",
         "class-variance-authority": "^0.7.1",

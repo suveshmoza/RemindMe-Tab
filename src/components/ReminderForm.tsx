@@ -1,18 +1,19 @@
 import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { NativeSelect } from './ui/native-select';
-
-type TimeMode = 'duration' | 'specific';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { TimeMode, DurationUnit } from '@/types/reminder-form';
+import type { ReminderFormData } from '@/types/reminder-form-data';
+import type { TabInfo } from '@/types/tab';
+import { DEFAULT_REMINDER_DELAY_MS } from '@/constants';
+import { isValidFutureTime } from '@/utils/reminder-helpers';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { NativeSelect } from '@/components/ui/native-select';
 
 interface ReminderFormProps {
-    onSubmit: (data: { triggerTime: number; title: string; url: string; tabId: number }) => void;
-    currentTab?: { id: number; title: string; url: string };
+    onSubmit: (data: ReminderFormData) => void;
+    currentTab?: TabInfo;
 }
-
-type DurationUnit = 'minutes' | 'hours' | 'days';
 
 export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
     const [mode, setMode] = useState<TimeMode>('duration');
@@ -22,29 +23,20 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
     const [time, setTime] = useState('');
 
     useEffect(() => {
-        // Set default date to today and time to current time + 1 hour
+        // Set default date to today and time to current time + default delay
         const now = new Date();
-        const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-        setDate(format(oneHourLater, 'yyyy-MM-dd'));
-        setTime(format(oneHourLater, 'HH:mm'));
+        const defaultTime = new Date(now.getTime() + DEFAULT_REMINDER_DELAY_MS);
+        setDate(format(defaultTime, 'yyyy-MM-dd'));
+        setTime(format(defaultTime, 'HH:mm'));
     }, []);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!currentTab) {
-            alert('Please open a tab first');
-            return;
-        }
-
-        let triggerTime: number;
+    const calculateTriggerTime = useCallback((): number | null => {
         const now = Date.now();
 
         if (mode === 'duration') {
             const durationValue = parseInt(duration);
             if (isNaN(durationValue) || durationValue <= 0) {
-                alert('Please enter a valid duration');
-                return;
+                return null;
             }
 
             let milliseconds = durationValue;
@@ -60,33 +52,54 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
                     break;
             }
 
-            triggerTime = now + milliseconds;
+            return now + milliseconds;
         } else {
             if (!date || !time) {
-                alert('Please select both date and time');
-                return;
+                return null;
             }
 
             const dateTime = new Date(`${date}T${time}`);
-            triggerTime = dateTime.getTime();
+            const triggerTime = dateTime.getTime();
 
-            if (triggerTime <= now) {
-                alert('Please select a future date and time');
+            if (!isValidFutureTime(triggerTime)) {
+                return null;
+            }
+
+            return triggerTime;
+        }
+    }, [mode, duration, durationUnit, date, time]);
+
+    const handleSubmit = useCallback(
+        (e: React.FormEvent) => {
+            e.preventDefault();
+
+            if (!currentTab) {
                 return;
             }
-        }
 
-        onSubmit({
-            triggerTime,
-            title: currentTab.title,
-            url: currentTab.url,
-            tabId: currentTab.id,
-        });
+            const triggerTime = calculateTriggerTime();
+            if (triggerTime === null) {
+                return;
+            }
 
-        // Reset form
-        setDuration('');
-        setMode('duration');
-    };
+            onSubmit({
+                triggerTime,
+                title: currentTab.title,
+                url: currentTab.url,
+                tabId: currentTab.id,
+            });
+
+            // Reset form
+            setDuration('');
+            setMode('duration');
+        },
+        [currentTab, calculateTriggerTime, onSubmit]
+    );
+
+    const isFormValid = useMemo(() => {
+        if (!currentTab) return false;
+        return calculateTriggerTime() !== null;
+    }, [currentTab, calculateTriggerTime]);
 
     return (
         <form onSubmit={handleSubmit} className='space-y-4'>
@@ -159,7 +172,11 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
 
             {currentTab && <div className='text-sm text-muted-foreground'>Tab: {currentTab.title}</div>}
 
-            <Button type='submit' className='w-full'>
+            {!currentTab && (
+                <div className='text-sm text-destructive'>Please open a tab first</div>
+            )}
+
+            <Button type='submit' className='w-full' disabled={!isFormValid}>
                 Create Reminder
             </Button>
         </form>
