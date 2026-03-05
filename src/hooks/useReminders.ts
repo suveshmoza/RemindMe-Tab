@@ -12,6 +12,7 @@ interface UseRemindersReturn {
     createReminder: (data: ReminderFormData) => Promise<void>;
     updateReminder: (id: string, updates: Partial<Reminder>) => Promise<void>;
     deleteReminder: (id: string) => Promise<void>;
+    makeRecurring: (id: string, intervalMinutes: number) => Promise<void>;
     loadReminders: () => Promise<void>;
 }
 
@@ -51,6 +52,7 @@ export function useReminders(): UseRemindersReturn {
                     title: data.title,
                     triggerTime: data.triggerTime,
                     createdAt: Date.now(),
+                    ...(data.recurrence ? { recurrence: data.recurrence } : {}),
                 };
 
                 const response = (await browser.runtime.sendMessage({
@@ -120,6 +122,30 @@ export function useReminders(): UseRemindersReturn {
         [loadReminders]
     );
 
+    const makeRecurring = useCallback(
+        async (id: string, intervalMinutes: number) => {
+            try {
+                setError(null);
+                const response = (await browser.runtime.sendMessage({
+                    type: 'makeRecurring',
+                    id,
+                    intervalMinutes,
+                })) as MessageResponse;
+
+                if (response && response.success) {
+                    await loadReminders();
+                } else {
+                    throw new Error(response?.error || 'Failed to make reminder recurring');
+                }
+            } catch (err) {
+                const error = err instanceof Error ? err : new Error('Failed to make reminder recurring');
+                setError(error);
+                throw error;
+            }
+        },
+        [loadReminders]
+    );
+
     // Load reminders on mount
     useEffect(() => {
         loadReminders();
@@ -132,6 +158,7 @@ export function useReminders(): UseRemindersReturn {
         createReminder,
         updateReminder,
         deleteReminder,
+        makeRecurring,
         loadReminders,
     };
 }

@@ -1,5 +1,7 @@
 import { getReminders, updateReminder, deleteReminder, getReminder, addReminder } from '@/utils/storage';
 import { createNotification, requestNotificationPermission } from '@/utils/notification';
+import { getNextTriggerTime, shouldRecur } from '@/utils/recurrence';
+import { PENDING_RECURRENCE_STORAGE_KEY } from '@/constants';
 import type { Reminder } from '@/types/reminder';
 import type { MessageType, MessageResponse } from '@/types/messages';
 import { browser } from 'wxt/browser';
@@ -38,10 +40,28 @@ export default defineBackground(() => {
             // Create notification
             try {
                 const notificationId = await createNotification(reminder);
-                // Store notification ID to reminder mapping
                 await storage.setItem(`local:notification-${notificationId}`, reminderId);
             } catch (error) {
                 console.error('Error creating notification:', error);
+            }
+
+            // Reschedule if recurring
+            if (reminder.recurrence) {
+                const rule = reminder.recurrence;
+                const count = (rule.occurrenceCount ?? 0) + 1;
+                const nextTrigger = getNextTriggerTime(rule, reminder.triggerTime);
+                const updatedRule = { ...rule, occurrenceCount: count };
+                const updatedReminder = { ...reminder, recurrence: updatedRule, triggerTime: nextTrigger };
+
+                if (shouldRecur(updatedReminder, nextTrigger)) {
+                    await updateReminder(reminderId, {
+                        triggerTime: nextTrigger,
+                        recurrence: updatedRule,
+                        snoozedUntil: undefined,
+                        createdAt: Date.now(),
+                    });
+                    browser.alarms.create(`reminder-${reminderId}`, { when: nextTrigger });
+                }
             }
         }
     });
@@ -78,8 +98,7 @@ export default defineBackground(() => {
         }
     });
 
-    // Handle notification button clicks (snooze) - only for browsers that support buttons
-    // Firefox doesn't support notification buttons, so this listener won't be registered
+    // Handle notification button clicks - only for browsers that support buttons
     const isFirefox = import.meta.env.BROWSER === 'firefox';
     if (!isFirefox) {
         browser.notifications.onButtonClicked.addListener(async (notificationId: string, buttonIndex: number) => {
@@ -87,36 +106,23 @@ export default defineBackground(() => {
             const result = await storage.getItem<string>(`local:${key}`);
             const reminderId = result;
 
-            if (reminderId) {
-                const reminder = await getReminder(reminderId);
-                if (!reminder) {
-                    return;
+            if (!reminderId) return;
+            const reminder = await getReminder(reminderId);
+            if (!reminder) return;
+
+            if (buttonIndex === 0) {
+                // "Repeat every 15 min" – convert to recurring immediately
+                await convertToRecurring(reminderId, 15);
+                await storage.removeItem(`local:${key}`);
+                browser.notifications.clear(notificationId);
+            } else if (buttonIndex === 1) {
+                // "More options" – store pending ID and open popup
+                await storage.setItem(PENDING_RECURRENCE_STORAGE_KEY, reminderId);
+                try {
+                    await (browser.action as any).openPopup();
+                } catch {
+                    // openPopup may not be available in all contexts; user can click the icon
                 }
-
-                const now = Date.now();
-                let snoozeTime: number;
-
-                switch (buttonIndex) {
-                    case 0: // +5min
-                        snoozeTime = now + 5 * 60 * 1000;
-                        break;
-                    case 1: // +15min
-                        snoozeTime = now + 15 * 60 * 1000;
-                        break;
-                    case 2: // +30min
-                        snoozeTime = now + 30 * 60 * 1000;
-                        break;
-                    case 3: // Custom - for now, default to 1 hour, will be handled by popup
-                        snoozeTime = now + 60 * 60 * 1000;
-                        break;
-                    default:
-                        return;
-                }
-
-                await updateReminder(reminderId, { snoozedUntil: snoozeTime });
-                browser.alarms.create(`reminder-${reminderId}`, { when: snoozeTime });
-
-                // Clean up
                 await storage.removeItem(`local:${key}`);
                 browser.notifications.clear(notificationId);
             }
@@ -180,6 +186,16 @@ export default defineBackground(() => {
                         sendResponse({ success: false, error: errorMessage });
                     });
                 return true;
+            } else if (message.type === 'makeRecurring') {
+                convertToRecurring(message.id, message.intervalMinutes)
+                    .then(() => {
+                        sendResponse({ success: true });
+                    })
+                    .catch((error: unknown) => {
+                        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                        sendResponse({ success: false, error: errorMessage });
+                    });
+                return true;
             }
             return false;
         }
@@ -200,6 +216,25 @@ export default defineBackground(() => {
                 await storage.setItem(`local:notification-${notificationId}`, reminder.id);
             } catch (error) {
                 console.error('Error creating immediate notification:', error);
+            }
+
+            // If recurring, schedule the next occurrence even though we fired immediately
+            if (reminder.recurrence) {
+                const rule = reminder.recurrence;
+                const count = (rule.occurrenceCount ?? 0) + 1;
+                const nextTrigger = getNextTriggerTime(rule, reminder.triggerTime);
+                const updatedRule = { ...rule, occurrenceCount: count };
+                const updatedReminder = { ...reminder, recurrence: updatedRule, triggerTime: nextTrigger };
+
+                if (shouldRecur(updatedReminder, nextTrigger) && nextTrigger > now) {
+                    await updateReminder(reminder.id, {
+                        triggerTime: nextTrigger,
+                        recurrence: updatedRule,
+                        snoozedUntil: undefined,
+                        createdAt: now,
+                    });
+                    browser.alarms.create(alarmName, { when: nextTrigger });
+                }
             }
         } else {
             browser.alarms.create(alarmName, { when: reminder.triggerTime });
@@ -238,6 +273,30 @@ export default defineBackground(() => {
         const alarmName = `reminder-${id}`;
         browser.alarms.clear(alarmName);
         browser.alarms.create(alarmName, { when: snoozeTime });
+    }
+
+    async function convertToRecurring(reminderId: string, intervalMinutes: number): Promise<void> {
+        const reminder = await getReminder(reminderId);
+        if (!reminder) throw new Error('Reminder not found');
+
+        const now = Date.now();
+        const nextTrigger = now + intervalMinutes * 60 * 1000;
+
+        await updateReminder(reminderId, {
+            triggerTime: nextTrigger,
+            snoozedUntil: undefined,
+            createdAt: now,
+            recurrence: {
+                pattern: 'every-n-minutes',
+                interval: intervalMinutes,
+                endCondition: 'forever',
+                occurrenceCount: 0,
+            },
+        });
+
+        const alarmName = `reminder-${reminderId}`;
+        browser.alarms.clear(alarmName);
+        browser.alarms.create(alarmName, { when: nextTrigger });
     }
 
     // Restore alarms on startup

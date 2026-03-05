@@ -18,10 +18,8 @@ export async function createNotification(reminder: Reminder): Promise<string> {
             ? {}
             : {
                   buttons: [
-                      { title: 'Snooze 5min' },
-                      { title: 'Snooze 15min' },
-                      { title: 'Snooze 30min' },
-                      { title: 'Custom (1hr)' },
+                      { title: 'Repeat every 15 min' },
+                      { title: 'More options...' },
                   ],
                   requireInteraction: true,
               }),
