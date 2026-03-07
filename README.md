@@ -1,6 +1,6 @@
 <div align="center">
   <picture>
-    <img src="https://raw.githubusercontent.com/suveshmoza/RemindMe-Tab/refs/heads/main/src/assets/icon.png?token=GHSAT0AAAAAADR2374LET4XCZQDHTVO5ODI2NL6PWQ" alt="RemindMe Tab" width="96" height="96">
+    <img src="https://iili.io/qzdJNfV.png" alt="RemindMe Tab" width="96" height="96">
   </picture>
 
 <h1>RemindMe Tab</h1>
