@@ -1,7 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
+import { storage } from 'wxt/utils/storage';
 import { ReminderForm } from '@/components/ReminderForm';
 import { ReminderList } from '@/components/ReminderList';
+import { RecurrenceFromNotificationPicker } from '@/components/RecurrenceFromNotificationPicker';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ToastContainer } from '@/components/ui/toast';
@@ -10,16 +12,56 @@ import { useCurrentTab } from '@/hooks/useCurrentTab';
 import { useReminders } from '@/hooks/useReminders';
 import { useStorageListener } from '@/hooks/useStorageListener';
 import { useToast } from '@/hooks/useToast';
+import { PENDING_RECURRENCE_STORAGE_KEY } from '@/constants';
 import type { ReminderFormData } from '@/types/reminder-form-data';
 
 function App() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [pendingRecurrenceReminderId, setPendingRecurrenceReminderId] = useState<string | null>(null);
     const { currentTab, loading: tabLoading } = useCurrentTab();
-    const { reminders, loading: remindersLoading, createReminder, updateReminder, deleteReminder, loadReminders } =
+    const { reminders, loading: remindersLoading, createReminder, updateReminder, deleteReminder, makeRecurring, loadReminders } =
         useReminders();
     const { toasts, showError, showSuccess, removeToast } = useToast();
 
     const loading = tabLoading || remindersLoading;
+
+    // Check for pending recurrence from notification on mount + listen for changes
+    useEffect(() => {
+        (async () => {
+            const pendingId = await storage.getItem<string>(PENDING_RECURRENCE_STORAGE_KEY);
+            if (pendingId) {
+                setPendingRecurrenceReminderId(pendingId);
+            }
+        })();
+
+        const unwatch = storage.watch<string>(PENDING_RECURRENCE_STORAGE_KEY, (newValue) => {
+            setPendingRecurrenceReminderId(newValue ?? null);
+        });
+
+        return () => { unwatch(); };
+    }, []);
+
+    const handleRecurrencePick = useCallback(
+        async (intervalMinutes: number) => {
+            if (!pendingRecurrenceReminderId) return;
+            try {
+                await makeRecurring(pendingRecurrenceReminderId, intervalMinutes);
+                showSuccess(`Reminder set to repeat every ${intervalMinutes} minutes`);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Failed to set recurring';
+                showError(message);
+            } finally {
+                await storage.removeItem(PENDING_RECURRENCE_STORAGE_KEY);
+                setPendingRecurrenceReminderId(null);
+            }
+        },
+        [pendingRecurrenceReminderId, makeRecurring, showSuccess, showError]
+    );
+
+    const handleRecurrenceCancel = useCallback(async () => {
+        await storage.removeItem(PENDING_RECURRENCE_STORAGE_KEY);
+        setPendingRecurrenceReminderId(null);
+    }, []);
 
     // Set up storage listener
     useStorageListener({
@@ -128,6 +170,12 @@ function App() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <RecurrenceFromNotificationPicker
+                open={!!pendingRecurrenceReminderId}
+                onPick={handleRecurrencePick}
+                onCancel={handleRecurrenceCancel}
+            />
 
             <ToastContainer toasts={toasts} onRemove={removeToast} />
         </div>

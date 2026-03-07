@@ -2,6 +2,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import type { Reminder } from '@/types/reminder';
 import { getTriggerTime, isValidFutureTime } from '@/utils/reminder-helpers';
+import { formatRecurrenceLabel } from '@/utils/recurrence';
 import { Progress } from '../ui/progress';
 import { ReminderItemHeader } from './ReminderItemHeader';
 import { ReminderItemEditor } from './ReminderItemEditor';
@@ -56,24 +57,30 @@ export const ReminderItem = memo(function ReminderItem({ reminder, onEdit, onDel
     }, [triggerTime, reminder.createdAt]);
 
     // Memoize event handlers
-    const handleSave = useCallback(() => {
-        const dateTime = new Date(`${date}T${time}`);
-        const newTriggerTime = dateTime.getTime();
+    const handleSave = useCallback(
+        (recurrence?: import('@/types/reminder').RecurrenceRule) => {
+            const dateTime = new Date(`${date}T${time}`);
+            const newTriggerTime = dateTime.getTime();
 
-        if (!isValidFutureTime(newTriggerTime)) {
-            const errorMessage = 'Please select a future date and time';
-            if (onError) {
-                onError(errorMessage);
-            } else {
-                // Fallback to alert if no error handler provided
-                alert(errorMessage);
+            if (!isValidFutureTime(newTriggerTime)) {
+                const errorMessage = 'Please select a future date and time';
+                if (onError) {
+                    onError(errorMessage);
+                } else {
+                    alert(errorMessage);
+                }
+                return;
             }
-            return;
-        }
 
-        onEdit(reminder.id, { triggerTime: newTriggerTime, snoozedUntil: undefined });
-        setIsEditing(false);
-    }, [date, time, reminder.id, onEdit, onError]);
+            onEdit(reminder.id, {
+                triggerTime: newTriggerTime,
+                snoozedUntil: undefined,
+                recurrence: recurrence ?? undefined,
+            });
+            setIsEditing(false);
+        },
+        [date, time, reminder.id, onEdit, onError]
+    );
 
     const handleCancel = useCallback(() => {
         setDate(format(new Date(triggerTime), 'yyyy-MM-dd'));
@@ -125,6 +132,7 @@ export const ReminderItem = memo(function ReminderItem({ reminder, onEdit, onDel
                     <ReminderItemEditor
                         date={date}
                         time={time}
+                        recurrence={reminder.recurrence}
                         onDateChange={setDate}
                         onTimeChange={setTime}
                         onSave={handleSave}
@@ -133,10 +141,15 @@ export const ReminderItem = memo(function ReminderItem({ reminder, onEdit, onDel
                 </>
             ) : (
                 <div className='space-y-0.5'>
-                    <div className='flex items-center justify-between text-xs'>
+                    <div className='flex items-center gap-1.5 text-xs flex-wrap'>
                         {isSnoozed && (
                             <span className='px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium'>
                                 Snoozed
+                            </span>
+                        )}
+                        {reminder.recurrence && (
+                            <span className='px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium'>
+                                Repeats {formatRecurrenceLabel(reminder.recurrence)}
                             </span>
                         )}
                     </div>
