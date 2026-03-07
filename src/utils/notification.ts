@@ -1,11 +1,22 @@
 import type { Reminder } from '@/types/reminder';
 import { browser } from 'wxt/browser';
 
+function getNotificationButtons(reminder: Reminder): Browser.notifications.NotificationButton[] {
+    if (reminder.recurrence) {
+        return [
+            { title: 'Remove reminder' },
+            { title: 'Edit' },
+        ];
+    }
+    return [
+        { title: 'Snooze 5 min' },
+        { title: 'Remove reminder' },
+    ];
+}
+
 export async function createNotification(reminder: Reminder): Promise<string> {
-    // Use the PNG icon from the extension
     const iconUrl = browser.runtime.getURL('/icons/48.png');
 
-    // Build notification options based on browser support
     const isFirefox = import.meta.env.BROWSER === 'firefox';
 
     const notificationOptions: Browser.notifications.NotificationCreateOptions = {
@@ -13,14 +24,10 @@ export async function createNotification(reminder: Reminder): Promise<string> {
         iconUrl: iconUrl,
         title: 'Tab Reminder',
         message: `Reminder: ${reminder.title}`,
-        // Only include buttons and requireInteraction for non-Firefox browsers
         ...(isFirefox
             ? {}
             : {
-                  buttons: [
-                      { title: 'Repeat every 15 min' },
-                      { title: 'More options...' },
-                  ],
+                  buttons: getNotificationButtons(reminder),
                   requireInteraction: true,
               }),
     };

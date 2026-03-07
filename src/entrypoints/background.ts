@@ -110,22 +110,37 @@ export default defineBackground(() => {
             const reminder = await getReminder(reminderId);
             if (!reminder) return;
 
-            if (buttonIndex === 0) {
-                // "Repeat every 15 min" – convert to recurring immediately
-                await convertToRecurring(reminderId, 15);
-                await storage.removeItem(`local:${key}`);
-                browser.notifications.clear(notificationId);
-            } else if (buttonIndex === 1) {
-                // "More options" – store pending ID and open popup
-                await storage.setItem(PENDING_RECURRENCE_STORAGE_KEY, reminderId);
-                try {
-                    await (browser.action as any).openPopup();
-                } catch {
-                    // openPopup may not be available in all contexts; user can click the icon
+            if (reminder.recurrence) {
+                // Recurring reminder: buttons are "Stop reminder" | "Edit"
+                if (buttonIndex === 0) {
+                    // Stop reminder — remove recurrence and delete the reminder
+                    const alarmName = `reminder-${reminderId}`;
+                    browser.alarms.clear(alarmName);
+                    await deleteReminder(reminderId);
+                } else if (buttonIndex === 1) {
+                    // Edit — open popup so the user can modify the reminder
+                    await storage.setItem(PENDING_RECURRENCE_STORAGE_KEY, reminderId);
+                    try {
+                        await (browser.action as any).openPopup();
+                    } catch {
+                        // openPopup may not be available in all contexts
+                    }
                 }
-                await storage.removeItem(`local:${key}`);
-                browser.notifications.clear(notificationId);
+            } else {
+                // One-time reminder: buttons are "Snooze 5 min" | "Remove reminder"
+                if (buttonIndex === 0) {
+                    const snoozeTime = Date.now() + 5 * 60 * 1000;
+                    await updateReminder(reminderId, { snoozedUntil: snoozeTime });
+                    browser.alarms.create(`reminder-${reminderId}`, { when: snoozeTime });
+                } else if (buttonIndex === 1) {
+                    const alarmName = `reminder-${reminderId}`;
+                    browser.alarms.clear(alarmName);
+                    await deleteReminder(reminderId);
+                }
             }
+
+            await storage.removeItem(`local:${key}`);
+            browser.notifications.clear(notificationId);
         });
     }
 
