@@ -1,6 +1,6 @@
 <div align="center">
   <picture>
-    <img src="https://iili.io/qzdJNfV.png" alt="RemindMe Tab" width="96" height="96">
+    <img src="https://iili.io/qYU1FsI.png" alt="RemindMe Tab" width="96" height="96">
   </picture>
 
 <h1>RemindMe Tab</h1>
@@ -33,7 +33,10 @@ RemindMe Tab sets a timer on that tab or website so you don't lose track of it. 
 ## Features
 
 - **Flexible Scheduling** - Set reminders by duration (minutes, hours, days) or pick a specific date and time
+- **Recurring Reminders** - Repeat reminders on a schedule (daily/weekly/custom) with optional end conditions
+- **Edit Reminders** - Update the reminder time (and recurrence) anytime from the popup
 - **Snooze** - Need more time? Snooze reminders with one click (Chromium browsers)
+- **Quick Actions** - Manage reminders directly from notifications (where supported)
 - **Cross-browser** - Works on Chrome, Firefox, and other Chromium-based browsers
 - **Persistent Storage** - Reminders survive browser restarts and sync across sessions
 
@@ -41,8 +44,8 @@ RemindMe Tab sets a timer on that tab or website so you don't lose track of it. 
 
 1. **Install** from your browser's extension store (links above)
 2. **Click the extension icon** on any tab you want to remember
-3. **Choose your reminder time** - duration or specific date/time
-4. **Get notified** when it's time to revisit
+3. **Choose your reminder time** - duration, specific date/time, or set it to repeat
+4. **Get notified** when it's time to revisit (and manage it from the popup/notification)
 
 ---
 
