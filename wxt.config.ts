@@ -10,8 +10,8 @@ export default defineConfig({
     srcDir: 'src',
     manifest: {
         name: 'RemindMe Tab',
-        version: '1.0.0',
-        description: 'Remind yourself about tabs after a certain period of time',
+        version: '2.0.0',
+        description: 'A simple and lightweight extension that helps you set reminders for browser tabs, so you never lose track of important pages you want to revisit later.',
         permissions: ['alarms', 'storage', 'notifications', 'tabs', 'activeTab'],
         background: {
             service_worker: 'background.js',

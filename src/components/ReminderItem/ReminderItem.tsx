@@ -3,7 +3,9 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import type { Reminder } from '@/types/reminder';
 import { getTriggerTime, isValidFutureTime } from '@/utils/reminder-helpers';
 import { formatRecurrenceLabel } from '@/utils/recurrence';
+import { Edit2, Trash2 } from 'lucide-react';
 import { Progress } from '../ui/progress';
+import { Button } from '../ui/button';
 import { ReminderItemHeader } from './ReminderItemHeader';
 import { ReminderItemEditor } from './ReminderItemEditor';
 
@@ -14,7 +16,12 @@ interface ReminderItemProps {
     onError?: (message: string) => void;
 }
 
-export const ReminderItem = memo(function ReminderItem({ reminder, onEdit, onDelete, onError }: ReminderItemProps) {
+export const ReminderItem = memo(function ReminderItem({
+    reminder,
+    onEdit,
+    onDelete,
+    onError,
+}: ReminderItemProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [progress, setProgress] = useState(0);
     const [currentTime, setCurrentTime] = useState(Date.now());
@@ -96,37 +103,33 @@ export const ReminderItem = memo(function ReminderItem({ reminder, onEdit, onDel
         () => formatDistanceToNow(triggerTime, { addSuffix: false }),
         [triggerTime]
     );
-    const formattedDateTime = useMemo(() => format(new Date(triggerTime), 'PPpp'), [triggerTime]);
 
     return (
-        <div className='border rounded-lg p-2 space-y-3 bg-card hover:border-primary/50 transition-colors'>
-            {!isEditing && (
-                <ReminderItemHeader
-                    title={reminder.title}
-                    url={reminder.url}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                />
-            )}
+        <div className="border-2 border-border/50 rounded-2xl p-3 bg-card shadow-sm shadow-primary/5 hover:shadow-md hover:shadow-primary/10 hover:border-primary/40 transition-all duration-300">
+            {!isEditing && <ReminderItemHeader title={reminder.title} url={reminder.url} />}
 
             {/* Progress Bar */}
             {!isEditing && (
-                <div className='space-y-1'>
-                    <Progress value={progress} className='h-1.5' />
-                    <div className='flex items-center justify-between text-xs text-muted-foreground'>
-                        <span>{isPast ? 'Overdue' : 'Reminding in'}</span>
-                        <span className='font-medium text-foreground'>{timeDisplay}</span>
+                <div className="mt-2">
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                        <span className={isPast ? 'text-destructive font-medium' : ''}>
+                            {isPast ? 'Overdue' : 'Due in'}
+                        </span>
+                        <span className="font-semibold text-foreground tabular-nums">
+                            {timeDisplay}
+                        </span>
                     </div>
+                    <Progress value={progress} className="mt-1.5 h-1.5 bg-primary/15" />
                 </div>
             )}
 
             {/* Content: Editing or Display */}
             {isEditing ? (
                 <>
-                    <div className='flex items-start justify-between gap-2'>
-                        <div className='flex-1 min-w-0 space-y-1'>
-                            <h4 className='font-semibold text-sm truncate'>{reminder.title}</h4>
-                            <p className='text-xs text-muted-foreground truncate'>{reminder.url}</p>
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0 space-y-1">
+                            <h4 className="font-semibold text-sm truncate">{reminder.title}</h4>
+                            <p className="text-xs text-muted-foreground truncate">{reminder.url}</p>
                         </div>
                     </div>
                     <ReminderItemEditor
@@ -140,23 +143,42 @@ export const ReminderItem = memo(function ReminderItem({ reminder, onEdit, onDel
                     />
                 </>
             ) : (
-                <div className='space-y-0.5'>
-                    <div className='flex items-center gap-1.5 text-xs flex-wrap'>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-[11px] flex-wrap min-w-0">
                         {isSnoozed && (
-                            <span className='px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium'>
+                            <span className="px-2 py-0.5 rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-200 text-[11px] font-medium">
                                 Snoozed
                             </span>
                         )}
                         {reminder.recurrence && (
-                            <span className='px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium'>
+                            <span className="px-2 py-0.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200 text-[11px] font-medium">
                                 Repeats {formatRecurrenceLabel(reminder.recurrence)}
                             </span>
                         )}
                     </div>
-                    <p className='text-xs text-muted-foreground'>{formattedDateTime}</p>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={handleEdit}
+                            className="h-7 w-7 rounded-xl"
+                            aria-label="Edit reminder"
+                        >
+                            <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={handleDelete}
+                            className="h-7 w-7 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+                            aria-label="Delete reminder"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
             )}
         </div>
     );
 });
-

@@ -1,4 +1,10 @@
-import { getReminders, updateReminder, deleteReminder, getReminder, addReminder } from '@/utils/storage';
+import {
+    getReminders,
+    updateReminder,
+    deleteReminder,
+    getReminder,
+    addReminder,
+} from '@/utils/storage';
 import { createNotification, requestNotificationPermission } from '@/utils/notification';
 import { getNextTriggerTime, shouldRecur } from '@/utils/recurrence';
 import { PENDING_RECURRENCE_STORAGE_KEY } from '@/constants';
@@ -8,8 +14,18 @@ import { browser } from 'wxt/browser';
 
 export default defineBackground(() => {
     // Request notification permission on install
-    browser.runtime.onInstalled.addListener(async () => {
+    browser.runtime.onInstalled.addListener(async (details) => {
         await requestNotificationPermission();
+        if (details.reason === 'update') {
+            const currentVersion = browser.runtime.getManifest().version;
+            const key = 'local:last-opened-changelog-version';
+            const lastOpened = await storage.getItem<string>(key);
+
+            if (lastOpened !== currentVersion) {
+                await storage.setItem(key, currentVersion);
+                await browser.tabs.create({ url: 'https://remindme-tab.vercel.app/changelog' });
+            }
+        }
     });
 
     // Handle alarm triggers
@@ -51,7 +67,11 @@ export default defineBackground(() => {
                 const count = (rule.occurrenceCount ?? 0) + 1;
                 const nextTrigger = getNextTriggerTime(rule, reminder.triggerTime);
                 const updatedRule = { ...rule, occurrenceCount: count };
-                const updatedReminder = { ...reminder, recurrence: updatedRule, triggerTime: nextTrigger };
+                const updatedReminder = {
+                    ...reminder,
+                    recurrence: updatedRule,
+                    triggerTime: nextTrigger,
+                };
 
                 if (shouldRecur(updatedReminder, nextTrigger)) {
                     await updateReminder(reminderId, {
@@ -101,47 +121,49 @@ export default defineBackground(() => {
     // Handle notification button clicks - only for browsers that support buttons
     const isFirefox = import.meta.env.BROWSER === 'firefox';
     if (!isFirefox) {
-        browser.notifications.onButtonClicked.addListener(async (notificationId: string, buttonIndex: number) => {
-            const key = `notification-${notificationId}`;
-            const result = await storage.getItem<string>(`local:${key}`);
-            const reminderId = result;
+        browser.notifications.onButtonClicked.addListener(
+            async (notificationId: string, buttonIndex: number) => {
+                const key = `notification-${notificationId}`;
+                const result = await storage.getItem<string>(`local:${key}`);
+                const reminderId = result;
 
-            if (!reminderId) return;
-            const reminder = await getReminder(reminderId);
-            if (!reminder) return;
+                if (!reminderId) return;
+                const reminder = await getReminder(reminderId);
+                if (!reminder) return;
 
-            if (reminder.recurrence) {
-                // Recurring reminder: buttons are "Stop reminder" | "Edit"
-                if (buttonIndex === 0) {
-                    // Stop reminder — remove recurrence and delete the reminder
-                    const alarmName = `reminder-${reminderId}`;
-                    browser.alarms.clear(alarmName);
-                    await deleteReminder(reminderId);
-                } else if (buttonIndex === 1) {
-                    // Edit — open popup so the user can modify the reminder
-                    await storage.setItem(PENDING_RECURRENCE_STORAGE_KEY, reminderId);
-                    try {
-                        await (browser.action as any).openPopup();
-                    } catch {
-                        // openPopup may not be available in all contexts
+                if (reminder.recurrence) {
+                    // Recurring reminder: buttons are "Stop reminder" | "Edit"
+                    if (buttonIndex === 0) {
+                        // Stop reminder — remove recurrence and delete the reminder
+                        const alarmName = `reminder-${reminderId}`;
+                        browser.alarms.clear(alarmName);
+                        await deleteReminder(reminderId);
+                    } else if (buttonIndex === 1) {
+                        // Edit — open popup so the user can modify the reminder
+                        await storage.setItem(PENDING_RECURRENCE_STORAGE_KEY, reminderId);
+                        try {
+                            await (browser.action as any).openPopup();
+                        } catch {
+                            // openPopup may not be available in all contexts
+                        }
+                    }
+                } else {
+                    // One-time reminder: buttons are "Snooze 5 min" | "Remove reminder"
+                    if (buttonIndex === 0) {
+                        const snoozeTime = Date.now() + 5 * 60 * 1000;
+                        await updateReminder(reminderId, { snoozedUntil: snoozeTime });
+                        browser.alarms.create(`reminder-${reminderId}`, { when: snoozeTime });
+                    } else if (buttonIndex === 1) {
+                        const alarmName = `reminder-${reminderId}`;
+                        browser.alarms.clear(alarmName);
+                        await deleteReminder(reminderId);
                     }
                 }
-            } else {
-                // One-time reminder: buttons are "Snooze 5 min" | "Remove reminder"
-                if (buttonIndex === 0) {
-                    const snoozeTime = Date.now() + 5 * 60 * 1000;
-                    await updateReminder(reminderId, { snoozedUntil: snoozeTime });
-                    browser.alarms.create(`reminder-${reminderId}`, { when: snoozeTime });
-                } else if (buttonIndex === 1) {
-                    const alarmName = `reminder-${reminderId}`;
-                    browser.alarms.clear(alarmName);
-                    await deleteReminder(reminderId);
-                }
-            }
 
-            await storage.removeItem(`local:${key}`);
-            browser.notifications.clear(notificationId);
-        });
+                await storage.removeItem(`local:${key}`);
+                browser.notifications.clear(notificationId);
+            }
+        );
     }
 
     // Handle messages from popup
@@ -157,7 +179,8 @@ export default defineBackground(() => {
                         sendResponse({ success: true });
                     })
                     .catch((error: unknown) => {
-                        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                        const errorMessage =
+                            error instanceof Error ? error.message : 'Unknown error';
                         sendResponse({ success: false, error: errorMessage });
                     });
                 return true; // Keep channel open for async response
@@ -167,7 +190,8 @@ export default defineBackground(() => {
                         sendResponse({ success: true });
                     })
                     .catch((error: unknown) => {
-                        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                        const errorMessage =
+                            error instanceof Error ? error.message : 'Unknown error';
                         sendResponse({ success: false, error: errorMessage });
                     });
                 return true;
@@ -177,7 +201,8 @@ export default defineBackground(() => {
                         sendResponse({ success: true });
                     })
                     .catch((error: unknown) => {
-                        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                        const errorMessage =
+                            error instanceof Error ? error.message : 'Unknown error';
                         sendResponse({ success: false, error: errorMessage });
                     });
                 return true;
@@ -187,7 +212,8 @@ export default defineBackground(() => {
                         sendResponse({ success: true, reminders });
                     })
                     .catch((error: unknown) => {
-                        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                        const errorMessage =
+                            error instanceof Error ? error.message : 'Unknown error';
                         sendResponse({ success: false, error: errorMessage });
                     });
                 return true;
@@ -197,7 +223,8 @@ export default defineBackground(() => {
                         sendResponse({ success: true });
                     })
                     .catch((error: unknown) => {
-                        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                        const errorMessage =
+                            error instanceof Error ? error.message : 'Unknown error';
                         sendResponse({ success: false, error: errorMessage });
                     });
                 return true;
@@ -207,7 +234,8 @@ export default defineBackground(() => {
                         sendResponse({ success: true });
                     })
                     .catch((error: unknown) => {
-                        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                        const errorMessage =
+                            error instanceof Error ? error.message : 'Unknown error';
                         sendResponse({ success: false, error: errorMessage });
                     });
                 return true;
@@ -239,7 +267,11 @@ export default defineBackground(() => {
                 const count = (rule.occurrenceCount ?? 0) + 1;
                 const nextTrigger = getNextTriggerTime(rule, reminder.triggerTime);
                 const updatedRule = { ...rule, occurrenceCount: count };
-                const updatedReminder = { ...reminder, recurrence: updatedRule, triggerTime: nextTrigger };
+                const updatedReminder = {
+                    ...reminder,
+                    recurrence: updatedRule,
+                    triggerTime: nextTrigger,
+                };
 
                 if (shouldRecur(updatedReminder, nextTrigger) && nextTrigger > now) {
                     await updateReminder(reminder.id, {
