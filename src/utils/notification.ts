@@ -3,15 +3,9 @@ import { browser } from 'wxt/browser';
 
 function getNotificationButtons(reminder: Reminder): Browser.notifications.NotificationButton[] {
     if (reminder.recurrence) {
-        return [
-            { title: 'Remove reminder' },
-            { title: 'Edit' },
-        ];
+        return [{ title: 'Remove reminder' }, { title: 'Edit' }];
     }
-    return [
-        { title: 'Snooze 5 min' },
-        { title: 'Remove reminder' },
-    ];
+    return [{ title: 'Snooze 5 min' }, { title: 'Remove reminder' }];
 }
 
 export async function createNotification(reminder: Reminder): Promise<string> {
@@ -22,7 +16,7 @@ export async function createNotification(reminder: Reminder): Promise<string> {
     const notificationOptions: Browser.notifications.NotificationCreateOptions = {
         type: 'basic',
         iconUrl: iconUrl,
-        title: 'Tab Reminder',
+        title: 'Time to revisit your tab',
         message: `Reminder: ${reminder.title}`,
         ...(isFirefox
             ? {}

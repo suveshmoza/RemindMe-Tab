@@ -1,48 +1,55 @@
-import { memo } from 'react';
-import { Edit2, Trash2 } from 'lucide-react';
-import { Button } from '../ui/button';
+import { memo, useMemo } from 'react';
+import { ExternalLink } from 'lucide-react';
 
 interface ReminderItemHeaderProps {
     title: string;
     url: string;
-    onEdit: () => void;
-    onDelete: () => void;
 }
 
 export const ReminderItemHeader = memo(function ReminderItemHeader({
     title,
     url,
-    onEdit,
-    onDelete,
 }: ReminderItemHeaderProps) {
+    const { hostname } = useMemo(() => {
+        try {
+            const parsed = new URL(url);
+            const h = parsed.hostname.replace(/^www\./, '');
+            const d = `${h}${parsed.pathname === '/' ? '' : parsed.pathname}`;
+            return { hostname: h, displayUrl: d };
+        } catch {
+            return { hostname: '', displayUrl: url };
+        }
+    }, [url]);
+
     return (
-        <div className='flex items-start justify-between gap-2'>
-            <div className='flex-1 min-w-0 space-y-1'>
-                <h4 className='font-semibold text-sm truncate'>{title}</h4>
-                <p className='text-xs text-muted-foreground truncate'>{url}</p>
+        <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 min-w-0">
+                    <div
+                        className="mt-0.5 size-2 rounded-full bg-primary/70 shrink-0"
+                        aria-hidden="true"
+                    />
+                    <h4 className="font-semibold text-[13px] leading-snug truncate">{title}</h4>
+                </div>
+                {hostname && (
+                    <div className="mt-1">
+                        <span className="inline-flex items-center rounded-lg border border-border/50 bg-background/40 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            {hostname}
+                        </span>
+                    </div>
+                )}
             </div>
 
-            <div className='flex gap-1 shrink-0'>
-                <Button
-                    size='sm'
-                    variant='ghost'
-                    onClick={onEdit}
-                    className='h-8 w-8 p-0'
-                    aria-label='Edit reminder'
-                >
-                    <Edit2 className='h-4 w-4' />
-                </Button>
-                <Button
-                    size='sm'
-                    variant='ghost'
-                    onClick={onDelete}
-                    className='h-8 w-8 p-0 text-destructive hover:text-destructive'
-                    aria-label='Delete reminder'
-                >
-                    <Trash2 className='h-4 w-4' />
-                </Button>
-            </div>
+            <a
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                className="shrink-0 max-w-[160px] inline-flex items-center gap-1 rounded-xl border border-border/50 bg-background/40 px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-background/60 transition-colors"
+                title={url}
+            >
+                <span className="truncate">Visit</span>
+                <ExternalLink className="size-3 opacity-70 shrink-0" aria-hidden="true" />
+            </a>
         </div>
     );
 });
-

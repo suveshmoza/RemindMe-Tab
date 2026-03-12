@@ -1,26 +1,41 @@
-import { useCallback, useEffect, useState } from 'react';
-import { browser } from 'wxt/browser';
-import { storage } from 'wxt/utils/storage';
+import { RecurrenceFromNotificationPicker } from '@/components/RecurrenceFromNotificationPicker';
 import { ReminderForm } from '@/components/ReminderForm';
 import { ReminderList } from '@/components/ReminderList';
-import { RecurrenceFromNotificationPicker } from '@/components/RecurrenceFromNotificationPicker';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { ToastContainer } from '@/components/ui/toast';
-import { Plus } from 'lucide-react';
+import { PENDING_RECURRENCE_STORAGE_KEY } from '@/constants';
 import { useCurrentTab } from '@/hooks/useCurrentTab';
 import { useReminders } from '@/hooks/useReminders';
 import { useStorageListener } from '@/hooks/useStorageListener';
 import { useToast } from '@/hooks/useToast';
-import { PENDING_RECURRENCE_STORAGE_KEY } from '@/constants';
 import type { ReminderFormData } from '@/types/reminder-form-data';
+import { Plus } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { browser } from 'wxt/browser';
+import { storage } from 'wxt/utils/storage';
 
 function App() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [pendingRecurrenceReminderId, setPendingRecurrenceReminderId] = useState<string | null>(null);
+    const [pendingRecurrenceReminderId, setPendingRecurrenceReminderId] = useState<string | null>(
+        null
+    );
     const { currentTab, loading: tabLoading } = useCurrentTab();
-    const { reminders, loading: remindersLoading, createReminder, updateReminder, deleteReminder, makeRecurring, loadReminders } =
-        useReminders();
+    const {
+        reminders,
+        loading: remindersLoading,
+        createReminder,
+        updateReminder,
+        deleteReminder,
+        makeRecurring,
+        loadReminders,
+    } = useReminders();
     const { toasts, showError, showSuccess, removeToast } = useToast();
 
     const loading = tabLoading || remindersLoading;
@@ -38,7 +53,9 @@ function App() {
             setPendingRecurrenceReminderId(newValue ?? null);
         });
 
-        return () => { unwatch(); };
+        return () => {
+            unwatch();
+        };
     }, []);
 
     const handleRecurrencePick = useCallback(
@@ -65,13 +82,10 @@ function App() {
 
     // Set up storage listener
     useStorageListener({
-        onRemindersChange: useCallback(
-            () => {
-                // Reload reminders when storage changes
-                loadReminders();
-            },
-            [loadReminders]
-        ),
+        onRemindersChange: useCallback(() => {
+            // Reload reminders when storage changes
+            loadReminders();
+        }, [loadReminders]),
         onPoll: loadReminders,
     });
 
@@ -79,14 +93,14 @@ function App() {
         async (data: ReminderFormData) => {
             try {
                 await createReminder(data);
-                showSuccess('Reminder created successfully');
                 setIsDialogOpen(false);
             } catch (error) {
-                const message = error instanceof Error ? error.message : 'Failed to create reminder';
+                const message =
+                    error instanceof Error ? error.message : 'Failed to create reminder';
                 showError(message);
             }
         },
-        [createReminder, showSuccess, showError]
+        [createReminder, showError]
     );
 
     const handleUpdateReminder = useCallback(
@@ -95,7 +109,8 @@ function App() {
                 await updateReminder(id, updates);
                 showSuccess('Reminder updated successfully');
             } catch (error) {
-                const message = error instanceof Error ? error.message : 'Failed to update reminder';
+                const message =
+                    error instanceof Error ? error.message : 'Failed to update reminder';
                 showError(message);
             }
         },
@@ -108,7 +123,8 @@ function App() {
                 await deleteReminder(id);
                 showSuccess('Reminder deleted successfully');
             } catch (error) {
-                const message = error instanceof Error ? error.message : 'Failed to delete reminder';
+                const message =
+                    error instanceof Error ? error.message : 'Failed to delete reminder';
                 showError(message);
             }
         },
@@ -127,28 +143,31 @@ function App() {
 
     if (loading) {
         return (
-            <div className='p-4 w-96'>
-                <p className='text-center'>Loading...</p>
+            <div className="p-4 w-96">
+                <p className="text-center">Loading...</p>
             </div>
         );
     }
 
     return (
-        <div className='p-4 w-96 h-[500px] overflow-y-auto'>
-            <div className='flex items-center justify-between mb-4'>
-                <div className='flex items-center gap-2'>
-                    <img
-                        src={browser.runtime.getURL('/icons/48.png')}
-                        alt='RemindMe Tab'
-                        width={32}
-                        height={32}
-                        className='mt-2'
-                        loading='eager'
-                    />
-                    <h1 className='text-2xl font-bold underline decoration-wavy decoration-blue-400'>RemindMe Tab</h1>
+        <div className="p-4 w-96 h-[500px] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="rounded-2xl">
+                        <img
+                            src={browser.runtime.getURL('/icons/48.png')}
+                            alt="RemindMe Tab"
+                            width={28}
+                            height={28}
+                            loading="eager"
+                        />
+                    </div>
+                    <h1 className="text-2xl font-bold bg-linear-to-r from-primary to-blue-400 bg-clip-text text-transparent tracking-tight">
+                        RemindMe Tab
+                    </h1>
                 </div>
-                <Button size='icon' onClick={handleOpenDialog} className='h-8 w-8'>
-                    <Plus className='h-4 w-4' />
+                <Button size="icon" onClick={handleOpenDialog} className="h-8 w-8">
+                    <Plus className="h-4 w-4" />
                 </Button>
             </div>
 
@@ -160,13 +179,16 @@ function App() {
             />
 
             <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
-                <DialogContent className='max-h-[85vh]'>
+                <DialogContent className="max-h-[85vh]">
                     <DialogHeader>
                         <DialogTitle>Create Reminder</DialogTitle>
                         <DialogDescription>Set a reminder for the current tab</DialogDescription>
                     </DialogHeader>
-                    <div className='overflow-y-auto max-h-[calc(85vh-8rem)]'>
-                        <ReminderForm onSubmit={handleFormSubmit} currentTab={currentTab || undefined} />
+                    <div className="overflow-y-auto max-h-[calc(85vh-8rem)]">
+                        <ReminderForm
+                            onSubmit={handleFormSubmit}
+                            currentTab={currentTab || undefined}
+                        />
                     </div>
                 </DialogContent>
             </Dialog>
