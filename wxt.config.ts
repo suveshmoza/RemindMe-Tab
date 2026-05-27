@@ -24,7 +24,6 @@ export default defineConfig({
         browser_specific_settings: {
             gecko: {
                 id: 'remindme-tab@suvesh',
-                // @ts-ignore
                 data_collection_permissions: {
                     required: ['none'],
                 },
