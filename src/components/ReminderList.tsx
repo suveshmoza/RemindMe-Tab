@@ -19,18 +19,18 @@ export const ReminderList = memo(function ReminderList({
 }: ReminderListProps) {
     if (reminders.length === 0) {
         return (
-            <Card className="bg-background/50 border-none shadow-none hover:shadow-none">
-                <CardContent className="pt-6 flex flex-col items-center justify-center">
+            <Card className='bg-background/50 border-none shadow-none hover:shadow-none'>
+                <CardContent className='pt-6 flex flex-col items-center justify-center'>
                     <img
                         src={browser.runtime.getURL('/doodle.jpg')}
-                        alt="RemindMe Tab"
-                        className="w-48 h-48 object-contain opacity-80 mix-blend-multiply dark:mix-blend-screen"
-                        loading="lazy"
+                        alt='RemindMe Tab'
+                        className='w-48 h-48 object-contain opacity-80 mix-blend-multiply dark:mix-blend-screen'
+                        loading='lazy'
                     />
-                    <p className="text-center text-muted-foreground text-lg font-medium">
+                    <p className='text-center text-muted-foreground text-lg font-medium'>
                         No active reminders
                     </p>
-                    <p className="text-center text-muted-foreground/70 text-sm">
+                    <p className='text-center text-muted-foreground/70 text-sm'>
                         Click the + button to add one
                     </p>
                 </CardContent>
@@ -40,10 +40,10 @@ export const ReminderList = memo(function ReminderList({
 
     return (
         <>
-            <h2 className="font-bold text-xl">Active Reminders</h2>
-            <p className="text-muted-foreground text-sm">Manage your tab reminders</p>
+            <h2 className='font-bold text-xl'>Active Reminders</h2>
+            <p className='text-muted-foreground text-sm'>Manage your tab reminders</p>
 
-            <div className="space-y-2 mt-2">
+            <div className='space-y-2 mt-2'>
                 {reminders.map((reminder) => (
                     <ReminderItem
                         key={reminder.id}

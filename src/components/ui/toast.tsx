@@ -71,12 +71,12 @@ export function Toast({ id, message, type = 'error', duration = 3000, onClose }:
                 open ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 pointer-events-none'
             )}
         >
-            <div className="mt-0.5 flex size-7 items-center justify-center rounded-xl">
-                <Icon className={cn('size-4', tone.iconColor)} aria-hidden="true" />
+            <div className='mt-0.5 flex size-7 items-center justify-center rounded-xl'>
+                <Icon className={cn('size-4', tone.iconColor)} aria-hidden='true' />
             </div>
 
-            <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+            <div className='min-w-0 flex-1'>
+                <div className='flex items-center gap-2'>
                     <p className={cn('text-[11px] font-bold tracking-wide uppercase', tone.subtle)}>
                         {tone.label}
                     </p>
@@ -92,16 +92,16 @@ export function Toast({ id, message, type = 'error', duration = 3000, onClose }:
             </div>
 
             <Button
-                variant="ghost"
-                size="icon"
+                variant='ghost'
+                size='icon'
                 onClick={close}
                 className={cn(
                     'ml-auto -mr-1 h-8 w-8 rounded-xl text-foreground/70 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10',
                     'opacity-70 group-hover:opacity-100 transition-opacity'
                 )}
-                aria-label="Dismiss notification"
+                aria-label='Dismiss notification'
             >
-                <X className="h-4 w-4" />
+                <X className='h-4 w-4' />
             </Button>
         </div>
     );
@@ -114,7 +114,7 @@ interface ToastContainerProps {
 
 export function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
     return (
-        <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 items-end">
+        <div className='fixed bottom-4 right-4 z-50 flex flex-col gap-2 items-end'>
             {toasts.map((toast) => (
                 <Toast
                     key={toast.id}

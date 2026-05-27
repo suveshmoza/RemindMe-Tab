@@ -7,4 +7,3 @@ export interface ReminderFormData {
     tabId: number;
     recurrence?: RecurrenceRule;
 }
-

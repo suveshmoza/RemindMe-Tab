@@ -40,13 +40,16 @@ export function RecurrenceFromNotificationPicker({
     }, [customValue, customUnit, onPick]);
 
     return (
-        <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onCancel(); }}>
+        <Dialog
+            open={open}
+            onOpenChange={(isOpen) => {
+                if (!isOpen) onCancel();
+            }}
+        >
             <DialogContent showCloseButton={false}>
                 <DialogHeader>
                     <DialogTitle>Set Recurring Reminder</DialogTitle>
-                    <DialogDescription>
-                        Choose how often to repeat this reminder
-                    </DialogDescription>
+                    <DialogDescription>Choose how often to repeat this reminder</DialogDescription>
                 </DialogHeader>
 
                 <div className='space-y-4'>
@@ -78,7 +81,9 @@ export function RecurrenceFromNotificationPicker({
                                 <NativeSelect
                                     className='w-full'
                                     value={customUnit}
-                                    onChange={(e) => setCustomUnit(e.target.value as 'minutes' | 'hours')}
+                                    onChange={(e) =>
+                                        setCustomUnit(e.target.value as 'minutes' | 'hours')
+                                    }
                                 >
                                     <option value='minutes'>Minutes</option>
                                     <option value='hours'>Hours</option>

@@ -31,13 +31,13 @@ pnpm build
 
 ## Development
 
-| Command | Description |
-| ----------------- | ------------------------------------ |
-| `pnpm dev` | Dev server for Chrome (hot-reload) |
+| Command            | Description                         |
+| ------------------ | ----------------------------------- |
+| `pnpm dev`         | Dev server for Chrome (hot-reload)  |
 | `pnpm dev:firefox` | Dev server for Firefox (hot-reload) |
-| `pnpm zip` | Create ZIP for Chrome |
-| `pnpm zip:firefox` | Create ZIP for Firefox |
-| `pnpm compile` | TypeScript type checking |
+| `pnpm zip`         | Create ZIP for Chrome               |
+| `pnpm zip:firefox` | Create ZIP for Firefox              |
+| `pnpm compile`     | TypeScript type checking            |
 
 ## Load in Browser
 
@@ -47,7 +47,7 @@ pnpm build
 
 ## Project Structure
 
-``` txt
+```txt
 src/
 ├── entrypoints/
 │ ├── popup/ # Popup UI (React)

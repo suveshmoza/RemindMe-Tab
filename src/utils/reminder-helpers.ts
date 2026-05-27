@@ -32,4 +32,3 @@ export function isReminderPast(reminder: Reminder): boolean {
 export function isValidFutureTime(triggerTime: number): boolean {
     return triggerTime > Date.now();
 }
-

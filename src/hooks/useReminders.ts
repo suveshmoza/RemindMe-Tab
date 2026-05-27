@@ -138,7 +138,8 @@ export function useReminders(): UseRemindersReturn {
                     throw new Error(response?.error || 'Failed to make reminder recurring');
                 }
             } catch (err) {
-                const error = err instanceof Error ? err : new Error('Failed to make reminder recurring');
+                const error =
+                    err instanceof Error ? err : new Error('Failed to make reminder recurring');
                 setError(error);
                 throw error;
             }
@@ -162,4 +163,3 @@ export function useReminders(): UseRemindersReturn {
         loadReminders,
     };
 }
-
