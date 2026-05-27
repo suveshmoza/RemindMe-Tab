@@ -29,7 +29,9 @@ export const ReminderItemEditor = memo(function ReminderItemEditor({
     const [recurrenceEnabled, setRecurrenceEnabled] = useState(!!recurrence);
     const [pattern, setPattern] = useState<RecurrencePattern>(recurrence?.pattern ?? 'daily');
     const [interval, setInterval] = useState(String(recurrence?.interval ?? 1));
-    const [endCondition, setEndCondition] = useState<RecurrenceEndCondition>(recurrence?.endCondition ?? 'forever');
+    const [endCondition, setEndCondition] = useState<RecurrenceEndCondition>(
+        recurrence?.endCondition ?? 'forever'
+    );
     const [endAfter, setEndAfter] = useState(String(recurrence?.endAfterOccurrences ?? 5));
     const [endDate, setEndDate] = useState(
         recurrence?.endDate ? format(new Date(recurrence.endDate), 'yyyy-MM-dd') : ''
@@ -140,7 +142,9 @@ export const ReminderItemEditor = memo(function ReminderItemEditor({
                         <NativeSelect
                             className='w-full h-8 text-xs'
                             value={endCondition}
-                            onChange={(e) => setEndCondition(e.target.value as RecurrenceEndCondition)}
+                            onChange={(e) =>
+                                setEndCondition(e.target.value as RecurrenceEndCondition)
+                            }
                         >
                             <option value='forever'>Never (repeat forever)</option>
                             <option value='after-occurrences'>After N times</option>

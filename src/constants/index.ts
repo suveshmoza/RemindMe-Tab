@@ -5,4 +5,3 @@ export const POLLING_INTERVAL_MS = 1000;
 export const DEFAULT_REMINDER_DELAY_MS = 60 * 60 * 1000; // 1 hour
 
 export const PENDING_RECURRENCE_STORAGE_KEY = 'local:pendingRecurrenceFromNotification';
-

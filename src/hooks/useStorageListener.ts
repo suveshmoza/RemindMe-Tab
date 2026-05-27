@@ -30,4 +30,3 @@ export function useStorageListener({ onRemindersChange, onPoll }: UseStorageList
         };
     }, [onRemindersChange, onPoll]);
 }
-

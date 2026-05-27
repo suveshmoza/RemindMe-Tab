@@ -105,31 +105,31 @@ export const ReminderItem = memo(function ReminderItem({
     );
 
     return (
-        <div className="border-2 border-border/50 rounded-2xl p-3 bg-card shadow-sm shadow-primary/5 hover:shadow-md hover:shadow-primary/10 hover:border-primary/40 transition-all duration-300">
+        <div className='border-2 border-border/50 rounded-2xl p-3 bg-card shadow-sm shadow-primary/5 hover:shadow-md hover:shadow-primary/10 hover:border-primary/40 transition-all duration-300'>
             {!isEditing && <ReminderItemHeader title={reminder.title} url={reminder.url} />}
 
             {/* Progress Bar */}
             {!isEditing && (
-                <div className="mt-2">
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <div className='mt-2'>
+                    <div className='flex items-center justify-between text-[11px] text-muted-foreground'>
                         <span className={isPast ? 'text-destructive font-medium' : ''}>
                             {isPast ? 'Overdue' : 'Due in'}
                         </span>
-                        <span className="font-semibold text-foreground tabular-nums">
+                        <span className='font-semibold text-foreground tabular-nums'>
                             {timeDisplay}
                         </span>
                     </div>
-                    <Progress value={progress} className="mt-1.5 h-1.5 bg-primary/15" />
+                    <Progress value={progress} className='mt-1.5 h-1.5 bg-primary/15' />
                 </div>
             )}
 
             {/* Content: Editing or Display */}
             {isEditing ? (
                 <>
-                    <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0 space-y-1">
-                            <h4 className="font-semibold text-sm truncate">{reminder.title}</h4>
-                            <p className="text-xs text-muted-foreground truncate">{reminder.url}</p>
+                    <div className='flex items-start justify-between gap-2'>
+                        <div className='flex-1 min-w-0 space-y-1'>
+                            <h4 className='font-semibold text-sm truncate'>{reminder.title}</h4>
+                            <p className='text-xs text-muted-foreground truncate'>{reminder.url}</p>
                         </div>
                     </div>
                     <ReminderItemEditor
@@ -143,38 +143,38 @@ export const ReminderItem = memo(function ReminderItem({
                     />
                 </>
             ) : (
-                <div className="mt-2 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 text-[11px] flex-wrap min-w-0">
+                <div className='mt-2 flex items-center justify-between gap-2'>
+                    <div className='flex items-center gap-1.5 text-[11px] flex-wrap min-w-0'>
                         {isSnoozed && (
-                            <span className="px-2 py-0.5 rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-200 text-[11px] font-medium">
+                            <span className='px-2 py-0.5 rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-200 text-[11px] font-medium'>
                                 Snoozed
                             </span>
                         )}
                         {reminder.recurrence && (
-                            <span className="px-2 py-0.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200 text-[11px] font-medium">
+                            <span className='px-2 py-0.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200 text-[11px] font-medium'>
                                 Repeats {formatRecurrenceLabel(reminder.recurrence)}
                             </span>
                         )}
                     </div>
 
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className='flex items-center gap-1 shrink-0'>
                         <Button
-                            size="icon"
-                            variant="ghost"
+                            size='icon'
+                            variant='ghost'
                             onClick={handleEdit}
-                            className="h-7 w-7 rounded-xl"
-                            aria-label="Edit reminder"
+                            className='h-7 w-7 rounded-xl'
+                            aria-label='Edit reminder'
                         >
-                            <Edit2 className="h-4 w-4" />
+                            <Edit2 className='h-4 w-4' />
                         </Button>
                         <Button
-                            size="icon"
-                            variant="ghost"
+                            size='icon'
+                            variant='ghost'
                             onClick={handleDelete}
-                            className="h-7 w-7 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
-                            aria-label="Delete reminder"
+                            className='h-7 w-7 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10'
+                            aria-label='Delete reminder'
                         >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className='h-4 w-4' />
                         </Button>
                     </div>
                 </div>

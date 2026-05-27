@@ -143,31 +143,31 @@ function App() {
 
     if (loading) {
         return (
-            <div className="p-4 w-96">
-                <p className="text-center">Loading...</p>
+            <div className='p-4 w-96'>
+                <p className='text-center'>Loading...</p>
             </div>
         );
     }
 
     return (
-        <div className="p-4 w-96 h-[500px] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="rounded-2xl">
+        <div className='p-4 w-96 h-[500px] overflow-y-auto'>
+            <div className='flex items-center justify-between mb-4'>
+                <div className='flex items-center gap-3'>
+                    <div className='rounded-2xl'>
                         <img
                             src={browser.runtime.getURL('/icons/48.png')}
-                            alt="RemindMe Tab"
+                            alt='RemindMe Tab'
                             width={28}
                             height={28}
-                            loading="eager"
+                            loading='eager'
                         />
                     </div>
-                    <h1 className="text-2xl font-bold bg-linear-to-r from-primary to-blue-400 bg-clip-text text-transparent tracking-tight">
+                    <h1 className='text-2xl font-bold bg-linear-to-r from-primary to-blue-400 bg-clip-text text-transparent tracking-tight'>
                         RemindMe Tab
                     </h1>
                 </div>
-                <Button size="icon" onClick={handleOpenDialog} className="h-8 w-8">
-                    <Plus className="h-4 w-4" />
+                <Button size='icon' onClick={handleOpenDialog} className='h-8 w-8'>
+                    <Plus className='h-4 w-4' />
                 </Button>
             </div>
 
@@ -179,12 +179,12 @@ function App() {
             />
 
             <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
-                <DialogContent className="max-h-[85vh]">
+                <DialogContent className='max-h-[85vh]'>
                     <DialogHeader>
                         <DialogTitle>Create Reminder</DialogTitle>
                         <DialogDescription>Set a reminder for the current tab</DialogDescription>
                     </DialogHeader>
-                    <div className="overflow-y-auto max-h-[calc(85vh-8rem)]">
+                    <div className='overflow-y-auto max-h-[calc(85vh-8rem)]'>
                         <ReminderForm
                             onSubmit={handleFormSubmit}
                             currentTab={currentTab || undefined}

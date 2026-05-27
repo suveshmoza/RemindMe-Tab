@@ -19,7 +19,10 @@ export function useToast() {
     }, []);
 
     const showError = useCallback((message: string) => showToast(message, 'error'), [showToast]);
-    const showSuccess = useCallback((message: string) => showToast(message, 'success'), [showToast]);
+    const showSuccess = useCallback(
+        (message: string) => showToast(message, 'success'),
+        [showToast]
+    );
     const showInfo = useCallback((message: string) => showToast(message, 'info'), [showToast]);
 
     return {
@@ -31,4 +34,3 @@ export function useToast() {
         removeToast,
     };
 }
-

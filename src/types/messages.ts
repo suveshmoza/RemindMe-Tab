@@ -8,4 +8,6 @@ export type MessageType =
     | { type: 'snoozeReminder'; id: string; minutes: number }
     | { type: 'makeRecurring'; id: string; intervalMinutes: number };
 
-export type MessageResponse = { success: true; reminders?: Reminder[] } | { success: false; error: string };
+export type MessageResponse =
+    | { success: true; reminders?: Reminder[] }
+    | { success: false; error: string };

@@ -1,4 +1,9 @@
-export type RecurrencePattern = 'daily' | 'weekly' | 'every-n-days' | 'every-n-hours' | 'every-n-minutes';
+export type RecurrencePattern =
+    | 'daily'
+    | 'weekly'
+    | 'every-n-days'
+    | 'every-n-hours'
+    | 'every-n-minutes';
 export type RecurrenceEndCondition = 'forever' | 'after-occurrences' | 'until-date';
 
 export interface RecurrenceRule {

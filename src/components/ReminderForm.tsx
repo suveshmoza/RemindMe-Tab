@@ -152,15 +152,15 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
     }, [currentTab, calculateTriggerTime, recurrenceEnabled, buildRecurrenceRule]);
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-2">
-            <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-muted-foreground">
+        <form onSubmit={handleSubmit} className='space-y-2'>
+            <div className='space-y-1.5'>
+                <Label className='text-xs font-medium text-muted-foreground'>
                     When should we remind you?
                 </Label>
-                <div className="flex p-0.5 bg-muted rounded-xl border border-border/50">
+                <div className='flex p-0.5 bg-muted rounded-xl border border-border/50'>
                     <Button
-                        type="button"
-                        size="sm"
+                        type='button'
+                        size='sm'
                         variant={mode === 'duration' ? 'default' : 'ghost'}
                         onClick={() => setMode('duration')}
                         className={`flex-1 h-8 rounded-lg transition-all duration-300 ${mode === 'duration' ? 'shadow-sm' : 'hover:bg-background/50'}`}
@@ -168,8 +168,8 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
                         Duration
                     </Button>
                     <Button
-                        type="button"
-                        size="sm"
+                        type='button'
+                        size='sm'
                         variant={mode === 'specific' ? 'default' : 'ghost'}
                         onClick={() => setMode('specific')}
                         className={`flex-1 h-8 rounded-lg transition-all duration-300 ${mode === 'specific' ? 'shadow-sm' : 'hover:bg-background/50'}`}
@@ -179,56 +179,56 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
                 </div>
             </div>
 
-            <div className="bg-card border border-border/50 rounded-sm p-2.5 shadow-sm">
+            <div className='bg-card border border-border/50 rounded-sm p-2.5 shadow-sm'>
                 {mode === 'duration' ? (
-                    <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Remind me in...</Label>
-                        <div className="flex gap-1">
+                    <div className='space-y-1.5'>
+                        <Label className='text-xs font-medium'>Remind me in...</Label>
+                        <div className='flex gap-1'>
                             <Input
-                                type="number"
-                                min="1"
-                                placeholder="e.g. 15"
+                                type='number'
+                                min='1'
+                                placeholder='e.g. 15'
                                 value={duration}
                                 onChange={(e) => setDuration(e.target.value)}
                                 required
-                                className="flex-1 h-9 text-base font-medium rounded-xl"
+                                className='flex-1 h-9 text-base font-medium rounded-xl'
                             />
-                            <div className="w-28">
+                            <div className='w-28'>
                                 <NativeSelect
-                                    className="w-full h-9 rounded-xl border-2 border-input/50 bg-transparent px-3 text-sm font-medium"
+                                    className='w-full h-9 rounded-xl border-2 border-input/50 bg-transparent px-3 text-sm font-medium'
                                     value={durationUnit}
                                     onChange={(e) =>
                                         setDurationUnit(e.target.value as DurationUnit)
                                     }
                                 >
-                                    <option value="minutes">Minutes</option>
-                                    <option value="hours">Hours</option>
-                                    <option value="days">Days</option>
+                                    <option value='minutes'>Minutes</option>
+                                    <option value='hours'>Hours</option>
+                                    <option value='days'>Days</option>
                                 </NativeSelect>
                             </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 gap-1">
-                        <div className="space-y-1">
-                            <Label className="text-xs font-medium">Date</Label>
+                    <div className='grid grid-cols-2 gap-1'>
+                        <div className='space-y-1'>
+                            <Label className='text-xs font-medium'>Date</Label>
                             <Input
-                                type="date"
+                                type='date'
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
                                 required
                                 min={format(new Date(), 'yyyy-MM-dd')}
-                                className="h-9 text-sm font-medium rounded-xl"
+                                className='h-9 text-sm font-medium rounded-xl'
                             />
                         </div>
-                        <div className="space-y-1">
-                            <Label className="text-xs font-medium">Time</Label>
+                        <div className='space-y-1'>
+                            <Label className='text-xs font-medium'>Time</Label>
                             <Input
-                                type="time"
+                                type='time'
                                 value={time}
                                 onChange={(e) => setTime(e.target.value)}
                                 required
-                                className="h-9 text-sm font-medium rounded-xl"
+                                className='h-9 text-sm font-medium rounded-xl'
                             />
                         </div>
                     </div>
@@ -236,75 +236,75 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
             </div>
 
             {/* Recurrence Toggle */}
-            <div className="bg-card border border-border/50 rounded-sm p-2.5 shadow-sm space-y-2.5">
-                <div className="flex items-center justify-between">
+            <div className='bg-card border border-border/50 rounded-sm p-2.5 shadow-sm space-y-2.5'>
+                <div className='flex items-center justify-between'>
                     <Label
-                        htmlFor="recurrence-toggle"
-                        className="text-xs font-medium cursor-pointer"
+                        htmlFor='recurrence-toggle'
+                        className='text-xs font-medium cursor-pointer'
                     >
                         Repeat this reminder?
                     </Label>
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label className='relative inline-flex items-center cursor-pointer'>
                         <input
-                            type="checkbox"
-                            id="recurrence-toggle"
+                            type='checkbox'
+                            id='recurrence-toggle'
                             checked={recurrenceEnabled}
                             onChange={(e) => setRecurrenceEnabled(e.target.checked)}
-                            className="sr-only peer"
+                            className='sr-only peer'
                         />
                         <div className="w-9 h-5 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                     </label>
                 </div>
 
                 {recurrenceEnabled && (
-                    <div className="pt-2.5 border-t border-border/50 space-y-2.5 animate-in fade-in slide-in-from-top-1 duration-300">
-                        <div className="space-y-1">
-                            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                    <div className='pt-2.5 border-t border-border/50 space-y-2.5 animate-in fade-in slide-in-from-top-1 duration-300'>
+                        <div className='space-y-1'>
+                            <Label className='text-[10px] text-muted-foreground uppercase tracking-wider'>
                                 How often?
                             </Label>
                             <NativeSelect
-                                className="w-full h-9 rounded-xl border-2 border-input/50 bg-transparent px-3 text-sm font-medium"
+                                className='w-full h-9 rounded-xl border-2 border-input/50 bg-transparent px-3 text-sm font-medium'
                                 value={recurrencePattern}
                                 onChange={(e) =>
                                     setRecurrencePattern(e.target.value as RecurrencePattern)
                                 }
                             >
-                                <option value="daily">Every day</option>
-                                <option value="weekly">Every week</option>
-                                <option value="every-n-days">Custom days</option>
-                                <option value="every-n-hours">Custom hours</option>
-                                <option value="every-n-minutes">Custom minutes</option>
+                                <option value='daily'>Every day</option>
+                                <option value='weekly'>Every week</option>
+                                <option value='every-n-days'>Custom days</option>
+                                <option value='every-n-hours'>Custom hours</option>
+                                <option value='every-n-minutes'>Custom minutes</option>
                             </NativeSelect>
                         </div>
 
                         {needsInterval && (
-                            <div className="space-y-1 animate-in fade-in duration-300">
-                                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                            <div className='space-y-1 animate-in fade-in duration-300'>
+                                <Label className='text-[10px] text-muted-foreground uppercase tracking-wider'>
                                     Every
                                 </Label>
-                                <div className="flex items-center gap-1">
+                                <div className='flex items-center gap-1'>
                                     <Input
-                                        type="number"
-                                        min="1"
-                                        placeholder="e.g. 3"
+                                        type='number'
+                                        min='1'
+                                        placeholder='e.g. 3'
                                         value={recurrenceInterval}
                                         onChange={(e) => setRecurrenceInterval(e.target.value)}
                                         required
-                                        className="flex-1 h-9 text-sm font-medium rounded-xl"
+                                        className='flex-1 h-9 text-sm font-medium rounded-xl'
                                     />
-                                    <span className="text-xs font-medium text-muted-foreground">
+                                    <span className='text-xs font-medium text-muted-foreground'>
                                         {recurrencePattern.replace('every-n-', '')}
                                     </span>
                                 </div>
                             </div>
                         )}
 
-                        <div className="space-y-1">
-                            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                        <div className='space-y-1'>
+                            <Label className='text-[10px] text-muted-foreground uppercase tracking-wider'>
                                 When does it end?
                             </Label>
                             <NativeSelect
-                                className="w-full h-9 rounded-xl border-2 border-input/50 bg-transparent px-3 text-sm font-medium"
+                                className='w-full h-9 rounded-xl border-2 border-input/50 bg-transparent px-3 text-sm font-medium'
                                 value={recurrenceEndCondition}
                                 onChange={(e) =>
                                     setRecurrenceEndCondition(
@@ -312,28 +312,28 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
                                     )
                                 }
                             >
-                                <option value="forever">Never (repeat forever)</option>
-                                <option value="after-occurrences">After specific times</option>
-                                <option value="until-date">On specific date</option>
+                                <option value='forever'>Never (repeat forever)</option>
+                                <option value='after-occurrences'>After specific times</option>
+                                <option value='until-date'>On specific date</option>
                             </NativeSelect>
                         </div>
 
                         {recurrenceEndCondition === 'after-occurrences' && (
-                            <div className="space-y-1 animate-in fade-in duration-300">
-                                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                            <div className='space-y-1 animate-in fade-in duration-300'>
+                                <Label className='text-[10px] text-muted-foreground uppercase tracking-wider'>
                                     Stop after
                                 </Label>
-                                <div className="flex items-center gap-2">
+                                <div className='flex items-center gap-2'>
                                     <Input
-                                        type="number"
-                                        min="1"
-                                        placeholder="e.g. 5"
+                                        type='number'
+                                        min='1'
+                                        placeholder='e.g. 5'
                                         value={endAfterOccurrences}
                                         onChange={(e) => setEndAfterOccurrences(e.target.value)}
                                         required
-                                        className="w-20 h-9 text-sm font-medium rounded-xl"
+                                        className='w-20 h-9 text-sm font-medium rounded-xl'
                                     />
-                                    <span className="text-xs font-medium text-muted-foreground">
+                                    <span className='text-xs font-medium text-muted-foreground'>
                                         times
                                     </span>
                                 </div>
@@ -341,12 +341,12 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
                         )}
 
                         {recurrenceEndCondition === 'until-date' && (
-                            <div className="space-y-1 animate-in fade-in duration-300">
-                                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                            <div className='space-y-1 animate-in fade-in duration-300'>
+                                <Label className='text-[10px] text-muted-foreground uppercase tracking-wider'>
                                     Stop on
                                 </Label>
                                 <Input
-                                    type="date"
+                                    type='date'
                                     value={endDate}
                                     onChange={(e) => setEndDate(e.target.value)}
                                     required
@@ -359,23 +359,23 @@ export function ReminderForm({ onSubmit, currentTab }: ReminderFormProps) {
             </div>
 
             {currentTab && (
-                <div className="flex items-center gap-2 px-2.5 py-1.5 bg-primary/10 rounded-sm border border-primary/10">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                    <div className="text-[11px] font-medium text-primary truncate">
+                <div className='flex items-center gap-2 px-2.5 py-1.5 bg-primary/10 rounded-sm border border-primary/10'>
+                    <div className='w-1.5 h-1.5 rounded-full bg-primary'></div>
+                    <div className='text-[11px] font-medium text-primary truncate'>
                         Saving: {currentTab.title}
                     </div>
                 </div>
             )}
 
             {!currentTab && (
-                <div className="text-[11px] text-destructive p-2 bg-destructive/10 rounded-sm border border-destructive/20">
+                <div className='text-[11px] text-destructive p-2 bg-destructive/10 rounded-sm border border-destructive/20'>
                     Please open a tab first
                 </div>
             )}
 
             <Button
-                type="submit"
-                className="w-full h-10 text-sm font-bold shadow-sm shadow-primary/20"
+                type='submit'
+                className='w-full h-10 text-sm font-bold shadow-sm shadow-primary/20'
                 disabled={!isFormValid}
             >
                 Create Reminder
