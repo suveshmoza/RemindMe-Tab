@@ -1,17 +1,10 @@
 {
     "$schema": "./node_modules/oxfmt/configuration_schema.json",
-    "semi": true,
     "trailingComma": "es5",
     "singleQuote": true,
-    "printWidth": 100,
     "tabWidth": 4,
-    "useTabs": false,
-    "arrowParens": "always",
     "endOfLine": "lf",
-    "bracketSpacing": true,
     "jsxSingleQuote": true,
-    "bracketSameLine": false,
-    "sortPackageJson": true,
     "ignorePatterns": [
         "logs",
         "*.log",
@@ -33,6 +26,8 @@
         "*.njsproj",
         "*.sln",
         "*.sw?",
-        ".wxt"
+        ".wxt",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml"
     ]
 }
