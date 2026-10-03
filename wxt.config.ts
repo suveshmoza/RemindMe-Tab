@@ -10,7 +10,7 @@ export default defineConfig({
     srcDir: 'src',
     manifest: {
         name: 'RemindMe Tab',
-        version: '2.0.0',
+        version: '2.0.1',
         description: 'Set reminders for tabs so you never lose track of pages you want to revisit.',
         permissions: ['alarms', 'storage', 'notifications', 'tabs', 'activeTab'],
         background: {

@@ -1,6 +1,6 @@
 {
     "name": "remindme-tab",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "private": true,
     "description": "Set reminders for tabs so you never lose track of pages you want to revisit.",
     "author": "Suvesh Moza <suveshmoza@gmail.com> (https://suveshmoza.vercel.app)",
