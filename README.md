@@ -10,6 +10,8 @@
     <a href="https://addons.mozilla.org/en-US/firefox/addon/remindme-tab">Install For Firefox</a>
     ·
     <a href="https://microsoftedge.microsoft.com/addons/detail/remindme-tab/jcfcbmjdgpipjmknfjnoanifmfjcdpcc">Install For Edge</a>
+    ·
+    <a href="https://chromewebstore.google.com/detail/remindme-tab/omelicgaonbibokibaghogdafhcocdpg">Install For Chrome</a>
   </p>
 
 <br>
